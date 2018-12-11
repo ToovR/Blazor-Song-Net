@@ -8,10 +8,6 @@ Si vous avez manqué les deux premiers :
 
 ## Notice d'utilisation
 
-### Récupération des sources
-
-Vous trouverez le code de la solution ici [tbd]
-
 ### Définition du répertoire des fichiers musicaux
 
 Par défaut, les projets utilisent le répertoire Ma musique/Ma musique configurable.
