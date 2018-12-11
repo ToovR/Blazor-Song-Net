@@ -1,0 +1,82 @@
+﻿@page "/library"
+@page "/library/{Filter}"
+@using Blazor.Song.Net.Shared;
+@inject HttpClient Http;
+@inject Services.IDataManager Data;
+ 
+<div id="library" name="library" class="content section">
+    <div name="searchPanel" class="field has-addons is-fullwidth">
+        <div id="librarySearchDiv" class="control is-fullwidth">
+            <input class="input is-fullwidth" type="text" placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' bind="@Filter" onkeypress="@SearchInputKeyPressed"></input>
+        </div>
+        <div class="control">
+            <a class="button is-info" onclick="@FilterClick">
+                Rechercher
+            </a>
+        </div>
+    </div>
+    <SongList Tracks="@TrackListFiltered" CurrentTrack="@CurrentTrack">
+        <RowTemplate>
+            <tr ondblclick="@(e => DoubleclickPlaylistRow(context))" class="libraryRow">
+                <td>@context.Title</td>
+                <td>@context.Artist</td>
+                <td>@context.Duration.ToString("mm\\:ss")</td>
+            </tr>
+        </RowTemplate>
+    </SongList>
+</div>
+
+@functions {
+    [Parameter]
+    string Filter
+    {
+        get { return Data.Filter; }
+        set
+        {
+            string decodedValue = null;
+            if (value != null)
+                decodedValue = Uri.UnescapeDataString(value);
+            if (Data.Filter == decodedValue)
+                return;
+            Data.Filter = decodedValue;
+            Console.WriteLine(Data.Filter);
+        }
+    }
+
+    [CascadingParameter]
+    ObservableList<TrackInfo> PlaylistTracks { get; set; }
+
+    TrackInfo CurrentTrack { get; set; }
+    List<TrackInfo> TrackListFiltered { get; set; }
+
+    void DoubleclickPlaylistRow(TrackInfo track)
+    {
+        if (PlaylistTracks.Any(t => t.Id == track.Id))
+            return;
+        PlaylistTracks.Add(track);
+    }
+
+    async Task FilterClick()
+    {
+        string filter = Data.Filter;
+        await UpdateLibrary(filter);
+    }
+
+    protected override async Task OnInitAsync()
+    {
+        await UpdateLibrary(Data.Filter);
+    }
+
+    async Task SearchInputKeyPressed(UIKeyboardEventArgs keybordEvent)
+    {
+        if (keybordEvent.Key == "Enter")
+        {
+            await FilterClick();
+        }
+    }
+
+    async Task UpdateLibrary(string filter)
+    {
+        TrackListFiltered = await Data.GetTracks(filter);
+    }
+}

@@ -328,3 +328,5 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+/Blazor.Song.Net.Client/wwwroot/css/bulma.custom.min.css
+/Blazor.Song.Net.Client/wwwroot/css/bulma.custom.css

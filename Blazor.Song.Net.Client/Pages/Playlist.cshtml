@@ -1,0 +1,128 @@
+﻿@page "/"
+@page "/playlist"
+@using Blazor.Song.Net.Shared;
+@using System.Collections.Specialized;
+@inject HttpClient Http;
+@inject Services.IDataManager Data;
+
+<SongList Tracks="@PlaylistTracks.ToList()" CurrentTrack="@Data.CurrentTrack">
+    <RowTemplate>
+        @{
+            string current = "";
+
+            if (context.Id == Data.CurrentTrack?.Id)
+            {
+                current = "current";
+            }
+        }
+        <tr ondblclick="@(e => PlaylistRowDoubleClick(context.Id))" class="playlistRow @current">
+            <td class="info" onclick="@(e => PlaylistRowClick(context.Id))">@context.Title</td>
+            <td class="info">
+                <div class="columns">
+                    <NavLink href="@("library/artist:\"%2F^" + context.Artist + "$%2F\"")" class="column is-narrow">
+                        <i class="fa fa-search"></i>
+                    </NavLink>
+                    <div class="column auto" onclick="@(e => PlaylistRowClick(context.Id))">@context.Artist</div>
+                </div>
+            </td>
+            <td class="info" onclick="@(e => PlaylistRowClick(context.Id))">@context.Duration.ToString("mm\\:ss")</td>
+            <td><button class="column button is-info" onclick="@(e => PlaylistRowRemoveClick(context.Id))"><i class="fa fa-times"></i></button></td>
+        </tr>
+
+    </RowTemplate>
+</SongList>
+
+@functions {
+
+    [CascadingParameter]
+    ObservableList<TrackInfo> PlaylistTracks { get; set; }
+
+
+    void CurrentTrackChanged(TrackInfo track)
+    {
+        this.StateHasChanged();
+    }
+
+    protected override Task OnInitAsync()
+    {
+        LoadPlaylist();
+        Data.CurrentTrackChanged += CurrentTrackChanged;
+        PlaylistTracks.CollectionChanged += PlaylistChanged;
+
+        return base.OnInitAsync();
+    }
+
+    async void PlaylistChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        await SavePlaylist();
+        this.StateHasChanged();
+    }
+
+    async Task LoadPlaylist()
+    {
+        Wrap.Cookie playlistCookie = new Wrap.Cookie("playlist");
+        string sidList = await playlistCookie.Get();
+        if (sidList != null)
+            (await Data.GetTracks("id:/^(" + sidList + ")$/")).ForEach(t =>
+            {
+                if (!PlaylistTracks.Any(p => p.Id == t.Id))
+                    PlaylistTracks.Add(t);
+            });
+        if (PlaylistTracks.Count > 0)
+            this.StateHasChanged();
+    }
+
+    async Task SavePlaylist()
+    {
+        string idList = string.Join("|", PlaylistTracks.Select(p => p.Id));
+        Wrap.Cookie playlistCookie = new Wrap.Cookie("playlist");
+        await playlistCookie.Set(idList);
+    }
+
+    void PlaylistRowClick(int id)
+    {
+        if (Data.CurrentTrack != null && Data.CurrentTrack.Id == id || !PlaylistTracks.Any(t => t.Id == id))
+            return;
+        Data.CurrentTrack = PlaylistTracks.First(t => t.Id == id);
+        this.StateHasChanged();
+    }
+
+    void PlaylistRowDoubleClick(int id)
+    {
+        if (Data.IsPlaying)
+            return;
+        Data.IsPlaying = true;
+        if (Data.CurrentTrack.Id == id || !PlaylistTracks.Any(t => t.Id == id))
+        {
+            this.StateHasChanged();
+            return;
+        }
+        Data.CurrentTrack = PlaylistTracks.First(t => t.Id == id);
+        this.StateHasChanged();
+    }
+
+    void PlaylistRowRemoveClick(int id)
+    {
+        if (!PlaylistTracks.Any(t => t.Id == id))
+            return;
+        if (Data.CurrentTrack.Id == id)
+            SetCurrentTrackNext();
+
+        RemovePlaylistTrack(id);
+    }
+
+    public void RemovePlaylistTrack(int trackInfoId)
+    {
+        TrackInfo trackToRemove = PlaylistTracks.First(t => t.Id == trackInfoId);
+        PlaylistTracks.Remove(trackToRemove);
+        this.StateHasChanged();
+    }
+
+    public void SetCurrentTrackNext()
+    {
+        if (PlaylistTracks.Count <= 1)
+            return;
+        Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.IndexOf(Data.CurrentTrack) + 1) % PlaylistTracks.Count];
+    }
+
+}

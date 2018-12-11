@@ -1,0 +1,141 @@
+﻿@using Blazor.Song.Net.Client.Wrap;
+@using Blazor.Song.Net.Shared;
+@using System.Linq;
+@inject HttpClient Http;
+@inject Services.IDataManager Data;
+@* Pour tester le cycle de vie d'un composant'
+    @{
+        Console.WriteLine("Loading...");
+    }
+    <button onclick="@(async () => this.StateHasChanged())">Refresh</button>*@
+
+<div name="player" class="content">
+    <div name="playerInfoPanel" class="frame">
+        <PlayerAudio ref="playerAudio" bind-IsPlaying="@IsPlaying" />
+        <PlayerInfo ref="playerInfo" PlayerAudio="@playerAudio" />
+    </div>
+    <div class="columns is-mobile" name="playerControlPanel">
+        <button class="column button is-info" onclick="@PreviousTrackClick"><i class="fa fa-fast-backward"></i></button>
+        <button class="column button is-info" onclick="@(async () => { await playerAudio.AddTime(-5); })"><i class="fa fa-backward"></i></button>
+        <button class="column button is-info" onclick="@(async () => { IsPlaying = !IsPlaying; })">
+            @if (IsPlaying)
+            {
+                <i class="fa fa-pause"></i>
+            }
+            else
+            {
+                <i class="fa fa-play"></i>
+            }
+        </button>
+        <button class="column button is-info" onclick="@(async () => { await playerAudio.AddTime(5); })"><i class="fa fa-forward"></i></button>
+        <button class="column button is-info" onclick="@NextTrackClick"><i class="fa fa-fast-forward"></i></button>
+    </div>
+</div>
+
+
+@functions {
+
+PlayerAudio playerAudio;
+PlayerInfo playerInfo;
+
+bool IsPlaying { get; set; }
+
+[CascadingParameter]
+ObservableList<TrackInfo> PlaylistTracks { get; set; }
+
+int TimeStatus { get; set; }
+
+protected override void OnInit()
+{
+    Wrap.Functions.SetTimeout(RefreshTimeStatus, 900);
+    if (Data.CurrentTrack != null)
+        UpdateTitle(Data.CurrentTrack);
+    Data.CurrentTrackChanged += CurrentTrackChanged;
+    base.OnInit();
+}
+
+
+public override void SetParameters(ParameterCollection parameters)
+{
+    Console.WriteLine("SetParameters");
+    base.SetParameters(parameters);
+}
+/* Pour tester le cycle de vie d'un composant'
+
+protected async override Task OnInitAsync()
+{
+    Console.WriteLine("OnInitAsync");
+    await base.OnInitAsync();
+}
+
+protected async override Task OnParametersSetAsync()
+{
+    Console.WriteLine("OnParametersSetAsync");
+    await base.OnParametersSetAsync();
+}
+
+protected override bool ShouldRender()
+{
+    Console.WriteLine("ShouldRender");
+    return base.ShouldRender();
+}
+
+protected async override Task OnAfterRenderAsync()
+{
+    Console.WriteLine("OnAfterRenderAsync");
+    await base.OnAfterRenderAsync();
+}
+
+*/
+
+public void SetCurrentTrackNext()
+{
+    if (PlaylistTracks.Count <= 1)
+        return;
+    Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.IndexOf(Data.CurrentTrack) + 1) % PlaylistTracks.Count];
+}
+
+private void CurrentTrackChanged(TrackInfo info)
+{
+    UpdateTitle(info);
+}
+
+private void UpdateTitle(TrackInfo info)
+{
+    if (info != null)
+        Document.UpdateTitle(info.Title + ", " + info.Artist + " - Blazor Song.Net");
+    else
+        Document.UpdateTitle("Blazor Song.Net");
+}
+
+private void NextTrackClick()
+{
+    SetCurrentTrackNext();
+}
+
+void PreviousTrackClick()
+{
+    if (PlaylistTracks.Count <= 1)
+        return;
+    if (PlaylistTracks.IndexOf(Data.CurrentTrack) == 0)
+        Data.CurrentTrack = PlaylistTracks[PlaylistTracks.Count - 1];
+    else
+        Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.ToList().IndexOf(Data.CurrentTrack) - 1) % PlaylistTracks.Count];
+}
+
+void RefreshTimeStatus()
+{
+    if (playerAudio != null && Data.CurrentTrack != null && Data.CurrentTrack.Duration.TotalSeconds != 0)
+    {
+        playerAudio.GetCurrentTime().ContinueWith((res) =>
+        {
+            TimeStatus = 100 * res.Result / (int)Data.CurrentTrack.Duration.TotalSeconds;
+            playerInfo.Refresh(TimeStatus);
+        });
+
+
+    }
+    Wrap.Functions.SetTimeout(RefreshTimeStatus, 900);
+}
+
+}

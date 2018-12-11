@@ -1,0 +1,106 @@
+﻿@using Blazor.Song.Net.Client.Wrap;
+@using Blazor.Song.Net.Shared;
+@inject Services.IDataManager Data;
+
+<audio id="playerAudio">
+    @if (Track != null)
+    {
+        <source src="@Track.Path" type="audio/mpeg" />
+    }
+    Your browser does not support the audio element.
+</audio>
+
+@functions {
+
+bool _isPlaying;
+
+AudioElement _audio = new AudioElement("playerAudio");
+
+[Parameter]
+bool IsPlaying
+{
+    get { return _isPlaying; }
+    set
+    {
+        if (_isPlaying == value)
+            return;
+        _isPlaying = value;
+        if (IsPlayingChanged != null)
+            IsPlayingChanged(value);
+        ModifyPlayPause(_isPlaying);
+    }
+}
+
+[Parameter]
+private Action<bool> IsPlayingChanged { get; set; }
+
+[CascadingParameter]
+ObservableList<TrackInfo> PlaylistTracks { get; set; }
+
+TrackInfo Track { get { return Data.CurrentTrack; } }
+
+protected override async Task OnInitAsync()
+{
+    Data.CurrentTrackChanged += CurrentTrackChanged;
+    AudioElement.OnEnded += OnEnded;
+    await base.OnInitAsync();
+}
+
+
+private void OnEnded()
+{
+    if (PlaylistTracks.Count <= 1)
+        return;
+    Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.IndexOf(Data.CurrentTrack) + 1) % PlaylistTracks.Count];
+}
+
+private void ChangeTrack()
+{
+    this.StateHasChanged();
+    if (Track == null)
+        return;
+    _audio.Load();
+    if (IsPlaying)
+        _audio.Play();
+}
+
+private void CurrentTrackChanged(TrackInfo track)
+{
+    ChangeTrack();
+}
+
+protected override void OnAfterRender()
+{
+    base.OnAfterRender();
+    _audio = new AudioElement("playerAudio");
+}
+
+public async Task<int> GetCurrentTime()
+{
+    return await _audio.GetCurrentTime();
+}
+
+public async Task AddTime(int numberOfSeconds)
+{
+    await SetTime(await _audio.GetCurrentTime() + numberOfSeconds);
+}
+
+public async Task SetTime(int newTime)
+{
+    if (newTime < 0)
+        newTime = 0;
+    if (newTime > Track.Duration.TotalSeconds)
+        newTime = (int)Track.Duration.TotalSeconds;
+    await _audio.SetCurrentTime(newTime);
+}
+
+private void ModifyPlayPause(bool isPlaying)
+{
+    if (isPlaying)
+        _audio.Play();
+    else
+        _audio.Pause();
+}
+
+
+}
