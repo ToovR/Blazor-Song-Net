@@ -1,0 +1,25 @@
+﻿@inherits PlayerComponent
+@using Blazor.Song.Net.Shared
+
+<div name="player" class="content">
+    <div name="playerInfoPanel" class="frame">
+        <PlayerAudio @ref="playerAudio" @bind-IsPlaying="IsPlaying" />
+        <PlayerInfo @ref="playerInfo" PlayerAudio="@playerAudio" />
+    </div>
+    <div class="columns is-mobile" name="playerControlPanel">
+        <button class="column button is-info" @onclick="PreviousTrackClick"><i class="fa fa-fast-backward"></i></button>
+        <button class="column button is-info" @onclick="(async () => { await playerAudio.AddTime(-5); })"><i class="fa fa-backward"></i></button>
+        <button class="column button is-info" @onclick="(async () => { IsPlaying = !IsPlaying; })">
+            @if (IsPlaying)
+            {
+                <i class="fa fa-pause"></i>
+            }
+            else
+            {
+                <i class="fa fa-play"></i>
+            }
+        </button>
+        <button class="column button is-info" @onclick="(async () => { await playerAudio.AddTime(5); })"><i class="fa fa-forward"></i></button>
+        <button class="column button is-info" @onclick="NextTrackClick"><i class="fa fa-fast-forward"></i></button>
+    </div>
+</div>

@@ -6,9 +6,15 @@ using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Wrap
 {
-    public static class Functions
+    public class Functions
     {
         private static Action _action;
+        public Functions(IJSRuntime jsRuntime)
+        {
+            JsRuntime = jsRuntime;
+        }
+
+        public IJSRuntime JsRuntime { get; }
 
         [JSInvokable]
         public static void ExecuteTimeoutFunc()
@@ -16,10 +22,10 @@ namespace Blazor.Song.Net.Client.Wrap
             _action?.Invoke();
         }
 
-        public static void SetTimeout(Action action, int time)
+        public void SetTimeout(Action action, int time)
         {
             _action = action;
-            JSRuntime.Current.InvokeAsync<bool>("functions.setTimeout", time);
+            JsRuntime.InvokeAsync<bool>("functions.setTimeout", time);
         }
     }
 }

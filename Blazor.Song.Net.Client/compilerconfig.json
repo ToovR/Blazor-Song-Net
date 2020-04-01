@@ -1,9 +1,5 @@
 ﻿[
   {
-    "outputFile": "wwwroot/sass/bulma.custom.css",
-    "inputFile": "wwwroot/sass/bulma.custom.scss"
-  },
-  {
     "outputFile": "wwwroot/css/bulma.custom.css",
     "inputFile": "wwwroot/css/bulma.custom.scss"
   }

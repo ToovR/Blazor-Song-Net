@@ -7,14 +7,17 @@ namespace Blazor.Song.Net.Client.Wrap
     {
         protected readonly string _id;
 
-        public Element(string id)
+        public IJSRuntime JsRuntime { get; }
+
+        public Element(string id, IJSRuntime jsRuntime)
         {
             _id = id;
+            JsRuntime = jsRuntime;
         }
 
         public async Task<int> GetOffsetWidth()
         {
-            return await JSRuntime.Current.InvokeAsync<int>("element.get_offsetWidth", _id);
+            return await JsRuntime.InvokeAsync<int>("element.get_offsetWidth", _id);
         }
     }
 }

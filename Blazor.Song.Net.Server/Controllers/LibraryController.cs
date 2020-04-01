@@ -1,10 +1,10 @@
 ﻿using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Blazor.Song.Net.Server.Controllers
@@ -69,16 +69,16 @@ namespace Blazor.Song.Net.Server.Controllers
                 });
                 return filteredTracks.Take(100).ToArray();
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
                 return null;
             }
-            catch (RegexMatchTimeoutException ex)
+            catch (RegexMatchTimeoutException)
             {
                 return null;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
 
@@ -106,7 +106,7 @@ namespace Blazor.Song.Net.Server.Controllers
         private void LoadLibrary()
         {
             if (_allTracks == null)
-                _allTracks = JsonConvert.DeserializeObject<TrackInfo[]>(System.IO.File.ReadAllText(libraryFile));            
+                _allTracks = JsonSerializer.Deserialize<TrackInfo[]>(System.IO.File.ReadAllText(libraryFile));            
         }
     }
 }

@@ -1,0 +1,14 @@
+{
+  "name": "Blazor.Song.Net",
+  "short_name": "Blazor.Song.Net",
+  "start_url": "./",
+  "display": "standalone",
+  "theme_color": "#03173d",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

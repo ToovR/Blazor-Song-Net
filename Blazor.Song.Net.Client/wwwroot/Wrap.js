@@ -61,7 +61,7 @@ window.functions = () => { };
 
 window.functions.setTimeout = (time) => {
     setTimeout(function () {
-        DotNet.invokeMethod('Blazor.Song.Net.Client', 'ExecuteTimeoutFunc');
+        DotNet.invokeMethodAsync('Blazor.Song.Net.Client', 'ExecuteTimeoutFunc');
     }, time);
 };
 

@@ -8,9 +8,16 @@ namespace Blazor.Song.Net.Client.Wrap
 {
     public class Document
     {
-        public static void UpdateTitle(string newValue)
+        public Document(IJSRuntime jsRuntime)
         {
-            JSRuntime.Current.InvokeAsync<bool>("document.updateTitle", newValue);
+            JsRuntime = jsRuntime;
+        }
+
+        public IJSRuntime JsRuntime { get; }
+
+        public void UpdateTitle(string newValue)
+        {
+            JsRuntime.InvokeAsync<bool>("document.updateTitle", newValue);
         }
 
     }

@@ -1,0 +1,9 @@
+﻿@inherits PlayerAudioComponent
+
+<audio id="playerAudio">
+    @if (Track != null)
+    {
+        <source src="@Track.Path" type="audio/mpeg" />
+    }
+    Your browser does not support the audio element.
+</audio>

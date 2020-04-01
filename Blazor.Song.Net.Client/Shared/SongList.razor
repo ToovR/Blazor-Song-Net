@@ -1,4 +1,5 @@
-﻿@using Blazor.Song.Net.Shared;
+﻿@inherits SongListComponent
+@using Blazor.Song.Net.Shared
 
 <div name="songList" class="table-container frame">
     <div class="table-scroll">
@@ -22,15 +23,3 @@
         </table>
     </div>
 </div>
-
-@functions {
-[Parameter]
-List<TrackInfo> Tracks { get; set; }
-
-[Parameter]
-TrackInfo CurrentTrack { get; set; }
-
-[Parameter]
-RenderFragment<TrackInfo> RowTemplate { get; set; }
-
-}

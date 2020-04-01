@@ -1,5 +1,5 @@
 ﻿using Blazor.Song.Net.Shared;
-using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

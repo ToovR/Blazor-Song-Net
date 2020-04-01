@@ -10,14 +10,17 @@ namespace Blazor.Song.Net.Client.Wrap
     {
         private string _keyName;
 
-        public Cookie(string keyName)
+        public IJSRuntime JsRuntime { get; }
+
+        public Cookie(string keyName, IJSRuntime jSRuntime)
         {
             _keyName = keyName;
+            JsRuntime = jSRuntime;
         }
 
         public async Task<string> Get()
         {
-            string returnValue = await JSRuntime.Current.InvokeAsync<string>("cookie.get");
+            string returnValue = await JsRuntime.InvokeAsync<string>("cookie.get");
             string matchingCookieEntry = returnValue.Split(';').Where(cookieEntry => cookieEntry.Trim().StartsWith(_keyName + "=")).FirstOrDefault();
             if (matchingCookieEntry == null)
                 return null;
@@ -27,7 +30,7 @@ namespace Blazor.Song.Net.Client.Wrap
         public async Task Set(string valueName)
         {
             string cookieValue = _keyName + "=" + valueName;
-            await JSRuntime.Current.InvokeAsync<bool>("cookie.set", cookieValue);
+            await JsRuntime.InvokeAsync<bool>("cookie.set", cookieValue);
         }
     }
 }

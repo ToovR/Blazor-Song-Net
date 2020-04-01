@@ -1,0 +1,22 @@
+﻿@inherits MainLayoutComponent
+
+<div class="main hero is-fullheight">
+    <div>
+        <CascadingValue Value="@PlaylistTracks">
+            <Player />
+            <div class="columns">
+                <NavLink href="playlist" class="button column">
+                    Playlist
+                </NavLink>
+                <NavLink href="library" class="button column" Match=NavLinkMatch.Prefix>
+                    Bibliothèque
+                </NavLink>
+                <NavLink href="settings" class="button column">
+                    Paramètres
+                </NavLink>
+            </div>
+            @Body
+        </CascadingValue>
+    </div>
+</div>
+
