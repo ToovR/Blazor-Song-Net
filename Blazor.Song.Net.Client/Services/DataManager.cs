@@ -10,6 +10,11 @@ namespace Blazor.Song.Net.Client.Services
 {
     public class DataManager : IDataManager
     {
+        public DataManager(HttpClient client)
+        {
+            _client = client;
+        }
+
         private readonly HttpClient _client;
         private TrackInfo _currentTrack;
 
@@ -34,11 +39,6 @@ namespace Blazor.Song.Net.Client.Services
         public string Filter { get; set; }
         public bool IsPlaying { get; set; }
 
-        public DataManager(HttpClient client)
-        {
-            _client = client;
-        }
-
         public async void DownloadTrack(TrackInfo trackInfo)
         {
             if (!File.Exists(trackInfo.Path))
@@ -48,7 +48,7 @@ namespace Blazor.Song.Net.Client.Services
 
         public async Task<List<TrackInfo>> GetTracks(string filter)
         {
-            return (await _client.GetJsonAsync<TrackInfo[]>("api/Library/Tracks?filter=" + filter ?? "")).ToList();
+            return (await _client.GetJsonAsync<TrackInfo[]>($"api/Library/Tracks?filter={filter ?? ""}")).ToList();
         }
     }
 }

@@ -1,20 +1,16 @@
 ﻿using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
-using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Shared
 {
     public class MainLayoutComponent : LayoutComponentBase
     {
-        [Inject]
-        Services.IDataManager Data { get; set; }
-
-
         protected ObservableList<TrackInfo> PlaylistTracks { get; set; } = new ObservableList<TrackInfo>();
+
+        [Inject]
+        private Services.IDataManager Data { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -24,12 +20,10 @@ namespace Blazor.Song.Net.Client.Shared
             await base.OnInitializedAsync();
         }
 
-        void PlaylistTracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void PlaylistTracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-
             if (e.NewItems != null && e.NewItems.Count > 0)
                 Data.DownloadTrack(((TrackInfo)e.NewItems[0]));
         }
-
     }
 }

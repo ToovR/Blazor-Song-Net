@@ -3,10 +3,6 @@ using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Shared
 {
@@ -15,13 +11,8 @@ namespace Blazor.Song.Net.Client.Shared
         [Inject]
         public IJSRuntime JsRuntime { get; set; }
 
-
-        [Inject]
-        protected Services.IDataManager Data { get; set; }
-
         [Parameter]
         public PlayerAudio PlayerAudio { get; set; }
-
 
         public int TimeStatus { get; set; }
 
@@ -32,13 +23,22 @@ namespace Blazor.Song.Net.Client.Shared
                 if (CurrentTrack == null)
                     return "";
                 else
-                    return CurrentTrack.Title + " - " + CurrentTrack.Artist;
+                    return $"{CurrentTrack.Title}  - {CurrentTrack.Artist}";
             }
         }
 
-        TrackInfo CurrentTrack
+        [Inject]
+        protected Services.IDataManager Data { get; set; }
+
+        private TrackInfo CurrentTrack
         {
             get { return Data.CurrentTrack; }
+        }
+
+        public void Refresh(int timeStatus)
+        {
+            TimeStatus = timeStatus;
+            this.StateHasChanged();
         }
 
         protected async void ProgressClick(MouseEventArgs e)
@@ -50,12 +50,5 @@ namespace Blazor.Song.Net.Client.Shared
             long newTime = (int)e.ClientX * ((int)CurrentTrack.Duration.TotalSeconds) / offsetWidth;
             await PlayerAudio.SetTime((int)newTime);
         }
-
-        public void Refresh(int timeStatus)
-        {
-            TimeStatus = timeStatus;
-            this.StateHasChanged();
-        }
-
     }
 }

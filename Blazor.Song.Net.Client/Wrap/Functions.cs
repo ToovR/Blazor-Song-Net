@@ -1,19 +1,16 @@
 ﻿using Microsoft.JSInterop;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Wrap
 {
     public class Functions
     {
-        private static Action _action;
         public Functions(IJSRuntime jsRuntime)
         {
             JsRuntime = jsRuntime;
         }
 
+        private static Action _action;
         public IJSRuntime JsRuntime { get; }
 
         [JSInvokable]

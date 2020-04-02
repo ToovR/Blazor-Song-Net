@@ -19,7 +19,10 @@ window.audioElement.get_currentTime = (id) => {
 };
 
 window.audioElement.set_currentTime = (id, value) => {
-    document.getElementById(id).currentTime = value;
+    var audioElement = document.getElementById(id);
+    if (!isNaN(audioElement.duration)) {
+        audioElement.currentTime = value;
+    }
 };
 
 window.audioElement.onended = (id) => {
@@ -64,4 +67,3 @@ window.functions.setTimeout = (time) => {
         DotNet.invokeMethodAsync('Blazor.Song.Net.Client', 'ExecuteTimeoutFunc');
     }, time);
 };
-

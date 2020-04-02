@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Services
 {
-    public delegate void CurrentTrackChangedDelegate(TrackInfo trackInfo);
+    public delegate Task CurrentTrackChangedDelegate(TrackInfo trackInfo);
 
     public interface IDataManager
     {

@@ -84,8 +84,6 @@ namespace Blazor.Song.Net.Client.Shared
 
         #endregion Class Declarations
 
-
-
         #region IList Members
 
         public int Count

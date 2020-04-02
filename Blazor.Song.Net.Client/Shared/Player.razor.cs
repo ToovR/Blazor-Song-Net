@@ -2,8 +2,6 @@
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,38 +12,22 @@ namespace Blazor.Song.Net.Client.Shared
         protected PlayerAudio playerAudio;
         protected PlayerInfo playerInfo;
 
+        public Document Document { get; private set; }
+
+        public Functions Functions { get; private set; }
+
+        [Inject]
+        public IJSRuntime JsRuntime { get; private set; }
+
         [Inject]
         protected Services.IDataManager Data { get; set; }
-
 
         protected bool IsPlaying { get; set; }
 
         [CascadingParameter]
-        ObservableList<TrackInfo> PlaylistTracks { get; set; }
+        private ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
-        int TimeStatus { get; set; }
-        public Document Document { get; private set; }
-        public Functions Functions { get; private set; }
-        [Inject]
-        public IJSRuntime JsRuntime { get; private set; }
-
-        protected override void OnInitialized()
-        {
-            Document = new Document(JsRuntime);
-            Functions = new Functions(JsRuntime);
-            Functions.SetTimeout(RefreshTimeStatus, 900);
-            if (Data.CurrentTrack != null)
-                UpdateTitle(Data.CurrentTrack);
-            Data.CurrentTrackChanged += CurrentTrackChanged;
-            base.OnInitialized();
-        }
-
-
-        public override async Task SetParametersAsync(ParameterView parameters)
-        {
-            await base.SetParametersAsync(parameters);
-        }
-    
+        private int TimeStatus { get; set; }
 
         public void SetCurrentTrackNext()
         {
@@ -54,22 +36,25 @@ namespace Blazor.Song.Net.Client.Shared
             Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.IndexOf(Data.CurrentTrack) + 1) % PlaylistTracks.Count];
         }
 
-        private void CurrentTrackChanged(TrackInfo info)
+        public override async Task SetParametersAsync(ParameterView parameters)
         {
-            UpdateTitle(info);
-        }
-
-        private void UpdateTitle(TrackInfo info)
-        {
-            if (info != null)
-                Document.UpdateTitle(info.Title + ", " + info.Artist + " - Blazor Song.Net");
-            else
-                Document.UpdateTitle("Blazor Song.Net");
+            await base.SetParametersAsync(parameters);
         }
 
         protected void NextTrackClick()
         {
             SetCurrentTrackNext();
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            Document = new Document(JsRuntime);
+            Functions = new Functions(JsRuntime);
+            Functions.SetTimeout(RefreshTimeStatus, 900);
+            if (Data.CurrentTrack != null)
+                await UpdateTitle(Data.CurrentTrack);
+            Data.CurrentTrackChanged += CurrentTrackChanged;
+            await base.OnInitializedAsync();
         }
 
         protected void PreviousTrackClick()
@@ -82,7 +67,12 @@ namespace Blazor.Song.Net.Client.Shared
                 Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.ToList().IndexOf(Data.CurrentTrack) - 1) % PlaylistTracks.Count];
         }
 
-        void RefreshTimeStatus()
+        private async Task CurrentTrackChanged(TrackInfo info)
+        {
+            await UpdateTitle(info);
+        }
+
+        private void RefreshTimeStatus()
         {
             if (playerAudio != null && Data.CurrentTrack != null && Data.CurrentTrack.Duration.TotalSeconds != 0)
             {
@@ -91,11 +81,16 @@ namespace Blazor.Song.Net.Client.Shared
                     TimeStatus = (int)(100 * res.Result / Data.CurrentTrack.Duration.TotalSeconds);
                     playerInfo.Refresh(TimeStatus);
                 });
-
-
             }
             Functions.SetTimeout(RefreshTimeStatus, 900);
         }
 
+        private async Task UpdateTitle(TrackInfo info)
+        {
+            if (info != null)
+                await Document.UpdateTitle($"{info.Title}, {info.Artist} - Blazor Song.Net");
+            else
+                await Document.UpdateTitle("Blazor Song.Net");
+        }
     }
 }

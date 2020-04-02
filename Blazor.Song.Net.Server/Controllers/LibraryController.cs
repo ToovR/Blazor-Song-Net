@@ -12,9 +12,17 @@ namespace Blazor.Song.Net.Server.Controllers
     [Route("api/[controller]")]
     public class LibraryController : Controller
     {
-        private string directoryRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+        private const string libraryFile = "./tracks.json";
         private TrackInfo[] _allTracks;
         private Regex _filterSentenceRegex = new Regex("([^\\s]*\"[^\"]+[\"][^\\s]*)|[^\" ]?[^\" ]+[^\" ]?");
+        private string directoryRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+
+        [HttpGet("[action]")]
+        public ActionResult Download(string path)
+        {
+            byte[] file = ReadFile(Path.Combine(directoryRoot, path.Trim('/').Replace("/", "\\")));
+            return File(file, "audio/mpeg");
+        }
 
         [HttpGet("[action]")]
         public IEnumerable<TrackInfo> Tracks(string filter)
@@ -25,7 +33,6 @@ namespace Blazor.Song.Net.Server.Controllers
 
             IEnumerable<TrackInfo> filteredTracks = _allTracks;
 
-
             Dictionary<string, Func<TrackInfo, string>> trackInfoSearchItems =
                 new Dictionary<string, Func<TrackInfo, string>>
                 {
@@ -35,14 +42,13 @@ namespace Blazor.Song.Net.Server.Controllers
                     { "title", ti => ti.Title },
                 };
 
-
             try
             {
                 filterItems.ForEach(fi =>
                 {
-                    if (trackInfoSearchItems.Any(tisikv => fi.StartsWith(tisikv.Key + ":")))
+                    if (trackInfoSearchItems.Any(tisikv => fi.StartsWith($"{tisikv.Key}:")))
                     {
-                        KeyValuePair<string, Func<TrackInfo, string>> trackInfoSearchItem = trackInfoSearchItems.Single(tisikv => fi.StartsWith(tisikv.Key + ":"));
+                        KeyValuePair<string, Func<TrackInfo, string>> trackInfoSearchItem = trackInfoSearchItems.Single(tisikv => fi.StartsWith($"{tisikv.Key}:"));
                         string valuePart = fi.Substring(trackInfoSearchItem.Key.Length + 1);
                         valuePart = valuePart.Trim('\"');
                         if (valuePart.First() == '/' && valuePart.Last() == '/')
@@ -76,20 +82,17 @@ namespace Blazor.Song.Net.Server.Controllers
             catch (RegexMatchTimeoutException)
             {
                 return null;
-
             }
             catch (Exception)
             {
                 return null;
-
             }
         }
 
-        [HttpGet("[action]")]
-        public ActionResult Download(string path)
+        private void LoadLibrary()
         {
-            byte[] file = ReadFile(Path.Combine(directoryRoot, path.Trim('/').Replace("/", "\\")));
-            return File(file, "audio/mpeg");
+            if (_allTracks == null)
+                _allTracks = JsonSerializer.Deserialize<TrackInfo[]>(System.IO.File.ReadAllText(libraryFile));
         }
 
         private byte[] ReadFile(string path)
@@ -100,13 +103,6 @@ namespace Blazor.Song.Net.Server.Controllers
                 s.Read(buffer, 0, (int)s.Length);
                 return buffer;
             }
-        }
-
-        private const string libraryFile = "./tracks.json";
-        private void LoadLibrary()
-        {
-            if (_allTracks == null)
-                _allTracks = JsonSerializer.Deserialize<TrackInfo[]>(System.IO.File.ReadAllText(libraryFile));            
         }
     }
 }

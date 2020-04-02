@@ -5,13 +5,10 @@ namespace Blazor.Song.Net.Client.Pages
 {
     public class SettingsComponent : ComponentBase
     {
+        private string _imageUrl = string.Empty;
+
         [Inject]
         protected Services.IDataManager Data { get; set; }
-
-        [Inject]
-        IJSRuntime JSRuntime { get; set; }
-
-        string _imageUrl = string.Empty;
 
         protected string ImageUrl
         {
@@ -21,11 +18,14 @@ namespace Blazor.Song.Net.Client.Pages
                 if (string.IsNullOrEmpty(value))
                     return;
                 if (_imageUrl == value)
-                    return; 
+                    return;
                 _imageUrl = value;
                 Wrap.ClassElement mainClassElement = new Wrap.ClassElement("main", JSRuntime);
                 mainClassElement.UpdateBackgroundImage(_imageUrl);
             }
         }
+
+        [Inject]
+        private IJSRuntime JSRuntime { get; set; }
     }
 }

@@ -1,23 +1,17 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.JSInterop;
 
 namespace Blazor.Song.Net.Client.Wrap
 {
     public class ClassElement
     {
-        IJSRuntime JsRuntime { get; set; }
-
-        protected readonly string _className;
-
         public ClassElement(string className, IJSRuntime jsRuntime)
         {
             JsRuntime = jsRuntime;
             _className = className;
         }
+
+        protected readonly string _className;
+        private IJSRuntime JsRuntime { get; set; }
 
         public void UpdateBackgroundImage(string source)
         {

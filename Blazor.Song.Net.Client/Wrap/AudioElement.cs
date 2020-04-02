@@ -1,19 +1,18 @@
 ﻿using Microsoft.JSInterop;
-using System;
 using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Wrap
 {
     public class AudioElement : Element
     {
-
-        public delegate void OnEndedDelegate();
-        public static event OnEndedDelegate OnEnded;
-
         public AudioElement(string id, IJSRuntime jsRuntime) : base(id, jsRuntime)
         {
             JsRuntime.InvokeAsync<bool>("audioElement.onended", _id);
         }
+
+        public delegate void OnEndedDelegate();
+
+        public static event OnEndedDelegate OnEnded;
 
         [JSInvokable]
         public static void AudioEnded()
@@ -27,9 +26,9 @@ namespace Blazor.Song.Net.Client.Wrap
             return currentTime;
         }
 
-        public void Load()
+        public async Task Load()
         {
-            JsRuntime.InvokeAsync<bool>("audioElement.load", _id);
+            await JsRuntime.InvokeAsync<bool>("audioElement.load", _id);
         }
 
         public void Pause()
@@ -46,8 +45,5 @@ namespace Blazor.Song.Net.Client.Wrap
         {
             await JsRuntime.InvokeAsync<bool>("audioElement.set_currentTime", _id, value);
         }
-
     }
 }
-
-

@@ -9,10 +9,9 @@ namespace Blazor.Song.Indexer
 {
     public class TrackParser
     {
-        private static string _musicDirectoryRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
-        //private static string _musicDirectoryRoot = @"D:\Perso\Music\_A trier";
         private static TrackInfo[] _allTracks;
-        private const string libraryFile = "../../../../Blazor.Song.Net.Server/tracks.json";
+
+        private static readonly string _musicDirectoryRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
 
         public string GetTrackData()
         {
@@ -29,11 +28,10 @@ namespace Blazor.Song.Indexer
                         FileInfo musicFileInfo = new FileInfo(musicFilePath);
                         TagLib.File tagMusicFile = TagLib.File.Create(new TagMusicFile(musicFileInfo.FullName));
 
-
                         string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
                         string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFileInfo.FullName);
                         counter++;
-                        Console.WriteLine($"progess - {counter*100/ numberOfTracks}%");
+                        Console.WriteLine($"progess - {counter * 100 / numberOfTracks}%");
                         return new TrackInfo
                         {
                             Album = tagMusicFile.Tag.Album,

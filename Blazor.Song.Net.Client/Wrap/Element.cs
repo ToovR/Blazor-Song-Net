@@ -5,15 +5,15 @@ namespace Blazor.Song.Net.Client.Wrap
 {
     public class Element
     {
-        protected readonly string _id;
-
-        public IJSRuntime JsRuntime { get; }
-
         public Element(string id, IJSRuntime jsRuntime)
         {
             _id = id;
             JsRuntime = jsRuntime;
         }
+
+        protected readonly string _id;
+
+        public IJSRuntime JsRuntime { get; }
 
         public async Task<int> GetOffsetWidth()
         {

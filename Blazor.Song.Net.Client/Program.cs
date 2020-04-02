@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Text;
+using Blazor.Song.Net.Client.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Blazor.Song.Net.Client.Services;
+using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client
 {
@@ -13,13 +10,9 @@ namespace Blazor.Song.Net.Client
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
             builder.Services.AddSingleton<IDataManager, DataManager>();
-
             builder.RootComponents.Add<App>("app");
-
             builder.Services.AddBaseAddressHttpClient();
-
             await builder.Build().RunAsync();
         }
     }
