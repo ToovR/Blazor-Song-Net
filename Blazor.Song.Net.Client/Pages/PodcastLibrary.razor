@@ -1,0 +1,87 @@
+﻿@inherits PodcastLibraryComponent
+@page "/PodcastLibrary"
+@page "/PodcastLibrary/{Filter}"
+@using Blazor.Song.Net.Client;
+@using Blazor.Song.Net.Shared;
+
+<div id="library" name="library" class="content section">
+    <!-- Podcasts subscribed/Podcast search-->
+    <div name="searchPanel" class="field has-addons is-fullwidth">
+        <div id="librarySearchDiv" class="control is-fullwidth">
+            <input class="input is-fullwidth" type="text" placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @onkeypress="SearchInputKeyPressed" />
+        </div>
+        <div class="control">
+            <a class="button is-info" @onclick="FilterClick">
+                Filtrer
+            </a>
+            <a class="button is-info" @onclick="SearchClick">
+                Rechercher
+            </a>
+        </div>
+    </div>
+    <div class="columns">
+        <div class="column">
+            <div name="songList" class="table-container frame">
+                <div class="table-scroll">
+                    <table class="table is-hoverable is-fullwidth is-narrow">
+                        <thead>
+                            <tr>
+                                <th><span class="text">Titre</span></th>
+                                <th><span class="text">Artiste</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ChannelsFiltered != null)
+                            {
+                                foreach (PodcastChannel channel in ChannelsFiltered)
+                                {
+                                    <tr @onclick="( e => ClickChannelRow(channel))" class="libraryRow">
+                                        <td>@channel.CollectionName</td>
+                                        <td>@channel.ArtistName</td>
+                                        @if (IsNewChannels)
+                                        {
+                                            <td><button class="column button is-info" @onclick="(e => SubscribeToPodcast(channel.CollectionId))"><i class="fa fa-plus"></i></button></td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            @if (CurrentChannelSummary != null)
+            {
+                <div class="card-content pCard">
+                    <div class="media">
+                        <div class="media-left">
+                            <figure class="image is-48x48">
+                                <img src="@CurrentChannelSummary.ImageUrl" alt="Placeholder image">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <p class="title is-4">@CurrentChannelSummary.Title</p>
+                        </div>
+                    </div>
+                    <div class="content">@((MarkupString)CurrentChannelSummary.Description)</div>
+                </div>
+            }
+            <!-- Episodes of current podcast-->
+            <SongList Tracks="@EpisodesFiltered" CurrentTrack="@CurrentEpisode">
+                <RowTemplate>
+                    <tr @ondblclick="( e => DoubleclickPlaylistRow(context))" class="libraryRow">
+                        <td>@context.Title</td>
+                        <td>@context.Artist</td>
+                        <td>
+                        @if (context.Duration != TimeSpan.Zero)
+                        {
+                            <span>@context.Duration.ToString("mm\\:ss")</span>
+                        }
+                        </td>
+                    </tr>
+                </RowTemplate>
+            </SongList>
+        </div>
+    </div>
+</div>

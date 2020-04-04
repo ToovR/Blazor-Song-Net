@@ -1,5 +1,6 @@
 ﻿using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
+using System;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 
@@ -23,7 +24,10 @@ namespace Blazor.Song.Net.Client.Shared
         private void PlaylistTracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.NewItems != null && e.NewItems.Count > 0)
+            {
+                Console.WriteLine(e.NewItems[0]);
                 Data.DownloadTrack(((TrackInfo)e.NewItems[0]));
+            }
         }
     }
 }

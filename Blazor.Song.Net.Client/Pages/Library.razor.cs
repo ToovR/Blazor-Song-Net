@@ -43,6 +43,15 @@ namespace Blazor.Song.Net.Client
             PlaylistTracks.Add(track);
         }
 
+        public async Task SearchKeyUp(KeyboardEventArgs e)
+        {
+            if (e.Key == "Enter")
+            {
+                Console.WriteLine($"current filter : {Filter}");
+                await UpdateLibrary(Data.Filter);
+            }
+        }
+
         protected async Task FilterClick()
         {
             string filter = Data.Filter;
@@ -65,7 +74,7 @@ namespace Blazor.Song.Net.Client
 
         private async Task UpdateLibrary(string filter)
         {
-            TrackListFiltered = await Data.GetTracks(filter);
+            TrackListFiltered = await Data.GetSongs(filter);
         }
     }
 }

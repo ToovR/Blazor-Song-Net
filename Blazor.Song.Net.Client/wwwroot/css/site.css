@@ -6,6 +6,11 @@
     opacity: 0.8;
 }
 
+.pCard {
+    opacity: 0.8;
+    background-color: #ffffff;
+}
+
 .main {
     background-image: url(/images/logoExpaceo.png);
     background-position: center center;
