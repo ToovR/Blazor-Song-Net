@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Blazor.Song.Net.Client.Shared
 {
-    public class SongListComponent : ComponentBase
+    public partial class SongList : ComponentBase
     {
         [Parameter]
         public TrackInfo CurrentTrack { get; set; }

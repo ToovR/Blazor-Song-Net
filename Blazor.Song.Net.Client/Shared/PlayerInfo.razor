@@ -1,5 +1,10 @@
-﻿@inherits PlayerInfoComponent
-@using Blazor.Song.Net.Shared
+﻿@using Blazor.Song.Net.Shared
 
 <div>@TrackFullTitle</div>
-<progress id="songProgress" name="songProgress" class="progress is-primary trackProgress" value="@(TimeStatus.ToString())" max="100" @onclick="ProgressClick"></progress>
+<progress id="songProgress" 
+          name="songProgress" 
+          class="progress is-primary trackProgress" 
+          value="@(TimeStatus.ToString())" 
+          max="100" 
+          @onclick=ProgressClick>
+</progress>

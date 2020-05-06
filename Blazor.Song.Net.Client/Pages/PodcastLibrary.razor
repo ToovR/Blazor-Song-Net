@@ -1,5 +1,4 @@
-﻿@inherits PodcastLibraryComponent
-@page "/PodcastLibrary"
+﻿@page "/PodcastLibrary"
 @page "/PodcastLibrary/{Filter}"
 @using Blazor.Song.Net.Client;
 @using Blazor.Song.Net.Shared;
@@ -11,10 +10,10 @@
             <input class="input is-fullwidth" type="text" placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @onkeypress="SearchInputKeyPressed" />
         </div>
         <div class="control">
-            <a class="button is-info" @onclick="FilterClick">
+            <a class="button is-info" @onclick=FilterClick>
                 Filtrer
             </a>
-            <a class="button is-info" @onclick="SearchClick">
+            <a class="button is-info" @onclick=SearchClick>
                 Rechercher
             </a>
         </div>
@@ -68,7 +67,7 @@
                 </div>
             }
             <!-- Episodes of current podcast-->
-            <SongList Tracks="@EpisodesFiltered" CurrentTrack="@CurrentEpisode">
+            <SongList Tracks=@EpisodesFiltered CurrentTrack=@CurrentEpisode>
                 <RowTemplate>
                     <tr @ondblclick="( e => DoubleclickPlaylistRow(context))" class="libraryRow">
                         <td>@context.Title</td>

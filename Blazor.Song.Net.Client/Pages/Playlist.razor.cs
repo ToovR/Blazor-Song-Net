@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public class PlaylistComponent : ComponentBase
+    public partial class Playlist : ComponentBase
     {
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }

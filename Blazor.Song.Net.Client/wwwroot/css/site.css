@@ -2,7 +2,6 @@
 
 .frame {
     background: black;
-    /*color: greenyellow !important;*/
     opacity: 0.8;
 }
 
@@ -19,7 +18,7 @@
 }
 
 .active {
-    background-color: limegreen;
+    background-color: #ADFFAD;
 }
 
 #librarySearchDiv {

@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Blazor.Song.Net.Client
+namespace Blazor.Song.Net.Client.Pages
 {
-    public class PodcastLibraryComponent : ComponentBase
+    public partial class PodcastLibrary : ComponentBase
     {
         public List<PodcastChannel> ChannelsFiltered { get; private set; }
         public TrackInfo CurrentChannel { get; set; }

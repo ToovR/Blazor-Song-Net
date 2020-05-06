@@ -135,7 +135,6 @@ namespace Blazor.Song.Net.Server.Services
         {
             using var httpClient = new HttpClient();
             var json = await httpClient.GetStringAsync($"https://itunes.apple.com/search?term={HttpUtility.UrlEncode(filter)}&media=podcast&country=fr");
-            //var json = System.IO.File.ReadAllText("./podMock.json");
             var channels = JsonSerializer.Deserialize<PodcastChannelResponse>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             return channels;
         }

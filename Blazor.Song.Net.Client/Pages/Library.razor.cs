@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Blazor.Song.Net.Client
+namespace Blazor.Song.Net.Client.Pages
 {
-    public class LibraryComponent : ComponentBase
+    public partial class Library : ComponentBase
     {
         public TrackInfo CurrentTrack { get; set; }
 

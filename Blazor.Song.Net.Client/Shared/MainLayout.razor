@@ -4,19 +4,28 @@
     <div>
         <CascadingValue Value="@PlaylistTracks">
             <Player />
-            <div class="columns">
-                <NavLink href="playlist" class="button column">
-                    Playlist
-                </NavLink>
-                <NavLink href="library" class="button column" Match=NavLinkMatch.Prefix>
-                    Bibliothèque
-                </NavLink>
-                <NavLink href="PodcastLibrary" class="button column">
-                    Podcasts
-                </NavLink>
-                <NavLink href="settings" class="button column">
-                    Paramètres
-                </NavLink>
+            <div class="field has-addons has-addons-fullwidth">
+                <p class="control">
+                    <NavLink href="playlist" class="button column">
+                        Playlist
+                    </NavLink>
+                </p>
+                <p class="control">
+
+                    <NavLink href="library" class="button column" Match=NavLinkMatch.Prefix>
+                        Bibliothèque
+                    </NavLink>
+                </p>
+                <p class="control">
+                    <NavLink href="PodcastLibrary" class="button column">
+                        Podcasts
+                    </NavLink>
+                </p>
+                <p class="control">
+                    <NavLink href="settings" class="button column">
+                        Paramètres
+                    </NavLink>
+                </p>
             </div>
             @Body
         </CascadingValue>
