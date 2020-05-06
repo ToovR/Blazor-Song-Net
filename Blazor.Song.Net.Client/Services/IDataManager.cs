@@ -1,4 +1,5 @@
 ﻿using Blazor.Song.Net.Shared;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,8 +15,18 @@ namespace Blazor.Song.Net.Client.Services
         string Filter { get; set; }
         bool IsPlaying { get; set; }
 
-        void DownloadTrack(TrackInfo trackInfo);
+        Task DownloadTrack(TrackInfo trackInfo);
 
-        Task<List<TrackInfo>> GetTracks(string filter);
+        Task<List<PodcastChannel>> GetChannels(string filter);
+
+        Task<Feed> GetEpisodes(Int64 collectionId);
+
+        Task<List<PodcastChannel>> GetNewChannels(string filter);
+
+        Task<List<TrackInfo>> GetSongs(string filter);
+
+        Task<List<TrackInfo>> GetTracks(string idList);
+
+        Task SubscribeToPodcast(PodcastChannel channel);
     }
 }

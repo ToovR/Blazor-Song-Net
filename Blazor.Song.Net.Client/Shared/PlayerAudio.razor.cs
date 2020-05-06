@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Shared
 {
-    public class PlayerAudioComponent : ComponentBase
+    public partial class PlayerAudio : ComponentBase
     {
         private AudioElement _audio = null;
         private bool _isPlaying;

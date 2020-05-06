@@ -2,13 +2,14 @@ using Blazor.Song.Net.Client.Shared;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public class PlaylistComponent : ComponentBase
+    public partial class Playlist : ComponentBase
     {
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
@@ -19,7 +20,7 @@ namespace Blazor.Song.Net.Client.Pages
         [Inject]
         private IJSRuntime JsRuntime { get; set; }
 
-        public void RemovePlaylistTrack(int trackInfoId)
+        public void RemovePlaylistTrack(Int64 trackInfoId)
         {
             TrackInfo trackToRemove = PlaylistTracks.First(t => t.Id == trackInfoId);
             PlaylistTracks.Remove(trackToRemove);
@@ -42,7 +43,7 @@ namespace Blazor.Song.Net.Client.Pages
             await base.OnInitializedAsync();
         }
 
-        protected void PlaylistRowClick(int id)
+        protected void PlaylistRowClick(Int64 id)
         {
             if (Data.CurrentTrack != null && Data.CurrentTrack.Id == id || !PlaylistTracks.Any(t => t.Id == id))
                 return;
@@ -50,7 +51,7 @@ namespace Blazor.Song.Net.Client.Pages
             this.StateHasChanged();
         }
 
-        protected void PlaylistRowDoubleClick(int id)
+        protected void PlaylistRowDoubleClick(Int64 id)
         {
             if (Data.IsPlaying)
                 return;
@@ -60,15 +61,16 @@ namespace Blazor.Song.Net.Client.Pages
                 this.StateHasChanged();
                 return;
             }
+
             Data.CurrentTrack = PlaylistTracks.First(t => t.Id == id);
             this.StateHasChanged();
         }
 
-        protected void PlaylistRowRemoveClick(int id)
+        protected void PlaylistRowRemoveClick(Int64 id)
         {
             if (!PlaylistTracks.Any(t => t.Id == id))
                 return;
-            if (Data.CurrentTrack.Id == id)
+            if (Data.CurrentTrack != null && Data.CurrentTrack.Id == id)
                 SetCurrentTrackNext();
 
             RemovePlaylistTrack(id);
@@ -84,7 +86,7 @@ namespace Blazor.Song.Net.Client.Pages
             Wrap.Cookie playlistCookie = new Wrap.Cookie("playlist", JsRuntime);
             string sidList = await playlistCookie.Get();
             if (sidList != null)
-                (await Data.GetTracks($"id:/^({sidList})$/")).ForEach(t =>
+                (await Data.GetTracks(sidList)).ForEach(t =>
                 {
                     if (!PlaylistTracks.Any(p => p.Id == t.Id))
                         PlaylistTracks.Add(t);

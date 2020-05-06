@@ -332,3 +332,4 @@ ASALocalRun/
 /Blazor.Song.Net.Client/wwwroot/css/bulma.custom.css
 /Blazor.Song.Net.Client/wwwroot/lib
 /Blazor.Song.Net.Server/tracks.json
+/Blazor.Song.Net.Server/podcasts

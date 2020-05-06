@@ -25,25 +25,30 @@ namespace Blazor.Song.Indexer
             _allTracks = trackEnum.AsParallel()
                     .Select((musicFilePath, index) =>
                     {
-                        FileInfo musicFileInfo = new FileInfo(musicFilePath);
-                        TagLib.File tagMusicFile = TagLib.File.Create(new TagMusicFile(musicFileInfo.FullName));
-
-                        string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
-                        string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFileInfo.FullName);
                         counter++;
                         Console.WriteLine($"progess - {counter * 100 / numberOfTracks}%");
-                        return new TrackInfo
-                        {
-                            Album = tagMusicFile.Tag.Album,
-                            Artist = artist,
-                            Duration = tagMusicFile.Properties.Duration,
-                            Id = index,
-                            Name = musicFileInfo.Name,
-                            Path = Uri.UnescapeDataString(folderRoot.MakeRelativeUri(new Uri(musicFileInfo.FullName)).ToString().Replace("Music/", "")),
-                            Title = title,
-                        };
+                        return GetTrackInfo(musicFilePath, index, folderRoot);
                     }).ToArray();
             return JsonSerializer.Serialize(_allTracks);
+        }
+
+        public static TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot)
+        {
+            FileInfo musicFileInfo = new FileInfo(musicFilePath);
+            TagLib.File tagMusicFile = TagLib.File.Create(new TagMusicFile(musicFileInfo.FullName));
+
+            string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
+            string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFileInfo.FullName);
+            return new TrackInfo
+            {
+                Album = tagMusicFile.Tag.Album,
+                Artist = artist,
+                Duration = tagMusicFile.Properties.Duration,
+                Id = index,
+                Name = musicFileInfo.Name,
+                Path = Uri.UnescapeDataString(folderRoot.MakeRelativeUri(new Uri(musicFileInfo.FullName)).ToString().Replace("Music/", "")),
+                Title = title,
+            };
         }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.JSInterop;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public class SettingsComponent : ComponentBase
+    public partial class Settings : ComponentBase
     {
         private string _imageUrl = string.Empty;
 

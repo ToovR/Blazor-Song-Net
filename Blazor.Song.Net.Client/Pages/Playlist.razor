@@ -1,8 +1,7 @@
-﻿@inherits PlaylistComponent
-@page "/"
+﻿@page "/"
 @page "/playlist"
 
-<SongList Tracks="@PlaylistTracks.ToList()" CurrentTrack="@Data.CurrentTrack">
+<SongList Tracks="@PlaylistTracks.ToList()" CurrentTrack=@Data.CurrentTrack>
     <RowTemplate>
         @{
             string current = "";

@@ -2,8 +2,12 @@
 
 .frame {
     background: black;
-    /*color: greenyellow !important;*/
     opacity: 0.8;
+}
+
+.pCard {
+    opacity: 0.8;
+    background-color: #ffffff;
 }
 
 .main {
@@ -14,7 +18,7 @@
 }
 
 .active {
-    background-color: limegreen;
+    background-color: #ADFFAD;
 }
 
 #librarySearchDiv {

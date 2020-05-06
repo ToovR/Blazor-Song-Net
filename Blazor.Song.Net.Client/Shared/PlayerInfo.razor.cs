@@ -6,7 +6,7 @@ using Microsoft.JSInterop;
 
 namespace Blazor.Song.Net.Client.Shared
 {
-    public class PlayerInfoComponent : ComponentBase
+    public partial class PlayerInfo : ComponentBase
     {
         [Inject]
         public IJSRuntime JsRuntime { get; set; }

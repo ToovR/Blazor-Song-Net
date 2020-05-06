@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Shared
 {
-    public class PlayerComponent : ComponentBase
+    public partial class Player : ComponentBase
     {
         protected PlayerAudio playerAudio;
         protected PlayerInfo playerInfo;

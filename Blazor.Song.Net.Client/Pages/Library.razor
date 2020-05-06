@@ -1,15 +1,14 @@
-﻿@inherits LibraryComponent
-@page "/library"
+﻿@page "/library"
 @page "/library/{Filter}"
 @using Blazor.Song.Net.Client;
 
 <div id="library" name="library" class="content section">
     <div name="searchPanel" class="field has-addons is-fullwidth">
         <div id="librarySearchDiv" class="control is-fullwidth">
-            <input class="input is-fullwidth" type="text" placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @onkeypress="SearchInputKeyPressed"></input>
+            <input class="input is-fullwidth" type="text" @onkeyup=SearchKeyUp placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @onkeypress="SearchInputKeyPressed" />
         </div>
         <div class="control">
-            <a class="button is-info" @onclick="FilterClick">
+            <a class="button is-info" @onclick=FilterClick>
                 Rechercher
             </a>
         </div>
