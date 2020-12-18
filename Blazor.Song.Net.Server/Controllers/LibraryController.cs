@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Blazor.Song.Net.Server.Controllers
 {
     [Route("api/[controller]")]
-    public class LibraryController : Controller
+    public class LibraryController : ControllerBase
     {
         public LibraryController(IFileHelper fileHelper, ILibraryStore libraryStore)
         {

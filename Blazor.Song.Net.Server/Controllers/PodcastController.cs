@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Blazor.Song.Net.Server.Controllers
 {
     [Route("api/[controller]")]
-    public class PodcastController : Controller
+    public class PodcastController : ControllerBase
     {
         public PodcastController(IFileHelper fileHelper, IPodcastStore podcastStore)
         {

@@ -7,7 +7,7 @@ using System.Linq;
 namespace Blazor.Song.Net.Server.Controllers
 {
     [Route("api/[controller]")]
-    public class TrackController : Controller
+    public class TrackController : ControllerBase
     {
         public TrackController(ILibraryStore libraryStore, IPodcastStore podcastStore)
         {
