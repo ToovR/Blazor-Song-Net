@@ -26,5 +26,6 @@ namespace Blazor.Song.Net.Shared
 
         public object SourceObject { get; set; }
         public string Title { get; set; }
+        public string DownloadPath { get; set; }
     }
 }

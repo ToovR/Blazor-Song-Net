@@ -50,9 +50,7 @@ namespace Blazor.Song.Net.Client.Services
                 await _client.GetByteArrayAsync($"api/Podcast/GetChannelEpisode?collectionId={trackInfo.CollectionId}&link={HttpUtility.UrlEncode(trackInfo.Path)}&id={trackInfo.Id}");
             }
             else
-            {
-                if (!File.Exists(trackInfo.Path))
-                    return;
+            {               
                 await _client.GetByteArrayAsync(trackInfo.Path);
             }
         }
@@ -61,6 +59,11 @@ namespace Blazor.Song.Net.Client.Services
         {
             var channels = (await _client.GetFromJsonAsync<PodcastChannel[]>($"api/Podcast/Channels?filter={filter ?? ""}")).ToList();
             return channels;
+        }
+
+        public async Task<bool> LoadLibrary()
+        {
+            return await _client.GetFromJsonAsync<bool>($"api/Track/LoadLibrary");
         }
 
         public async Task<Feed> GetEpisodes(Int64 collectionId)

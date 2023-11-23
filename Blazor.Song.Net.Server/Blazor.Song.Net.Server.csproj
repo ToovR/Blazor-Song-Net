@@ -15,5 +15,11 @@
     <ProjectReference Include="..\Blazor.Song.Net.Shared\Blazor.Song.Net.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="tracks.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 
 </Project>

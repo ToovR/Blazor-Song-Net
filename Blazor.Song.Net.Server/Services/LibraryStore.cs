@@ -1,4 +1,5 @@
-﻿using Blazor.Song.Net.Shared;
+﻿using Blazor.Song.Indexer;
+using Blazor.Song.Net.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,18 +10,31 @@ namespace Blazor.Song.Net.Server.Services
 {
     public class LibraryStore : ILibraryStore
     {
-        private const string libraryFile = "./tracks.json";
         private readonly Regex _filterSentenceRegex = new Regex("([^\\s]*\"[^\"]+[\"][^\\s]*)|[^\" ]?[^\" ]+[^\" ]?");
+        private readonly ITrackParserService _trackParser;
         private TrackInfo[] _allTracks;
+
+        public LibraryStore(ITrackParserService trackParser)
+        {
+            _trackParser = trackParser;
+        }
 
         public IEnumerable<TrackInfo> GetTracks(IEnumerable<long> ids)
         {
+            if (! _trackParser.IsLibraryFileExists())
+            {
+                return Enumerable.Empty<TrackInfo>();
+            }
             LoadLibrary();
             return _allTracks.Where(track => ids.Contains(track.Id));
         }
 
         public TrackInfo[] GetTracks(string filter)
         {
+            if (!_trackParser.IsLibraryFileExists())
+            {
+                return Array.Empty<TrackInfo>();
+            }
             LoadLibrary();
             filter ??= "";
             List<string> filterItems = _filterSentenceRegex.Matches(filter).Select(m => m.Value).ToList();
@@ -83,10 +97,19 @@ namespace Blazor.Song.Net.Server.Services
             }
         }
 
-        private void LoadLibrary()
+        public bool LoadLibrary()
         {
             if (_allTracks == null)
-                _allTracks = JsonSerializer.Deserialize<TrackInfo[]>(System.IO.File.ReadAllText(libraryFile));
+            {
+                if (!_trackParser.IsLibraryFileExists())
+                {
+                    _trackParser.UpdateTrackData();
+                }
+
+                string trackContent = _trackParser.GetTrackContent();
+                _allTracks = JsonSerializer.Deserialize<TrackInfo[]>(trackContent);
+            }
+            return _allTracks.Count() > 0;
         }
     }
 }

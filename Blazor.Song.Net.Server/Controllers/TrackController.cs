@@ -19,6 +19,19 @@ namespace Blazor.Song.Net.Server.Controllers
         private readonly IPodcastStore _podcastStore;
 
         [HttpGet("[action]")]
+        public bool LoadLibrary()
+        {
+            try
+            {
+                return _libraryStore.LoadLibrary();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        [HttpGet("[action]")]
         public TrackInfo[] Tracks(string ids)
         {
             var idList = ids.Split("|", StringSplitOptions.RemoveEmptyEntries).Select(id => long.Parse(id));

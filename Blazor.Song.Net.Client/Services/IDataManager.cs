@@ -28,5 +28,6 @@ namespace Blazor.Song.Net.Client.Services
         Task<List<TrackInfo>> GetTracks(string idList);
 
         Task SubscribeToPodcast(PodcastChannel channel);
+        Task<bool> LoadLibrary();
     }
 }

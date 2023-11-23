@@ -32,7 +32,7 @@ namespace Blazor.Song.Net.Client.Pages
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
         public List<TrackInfo> TrackListFiltered { get; set; }
-
+        public bool IsLibraryLoaded { get; private set; }
         [Inject]
         private Services.IDataManager Data { get; set; }
 
@@ -58,8 +58,24 @@ namespace Blazor.Song.Net.Client.Pages
             await UpdateLibrary(filter);
         }
 
+        protected async Task LoadLibraryClick()
+        {
+            bool loaded = await Data.LoadLibrary();
+            if (loaded)
+            {
+                IsLibraryLoaded = true;
+                await UpdateLibrary(Data.Filter);
+            }
+        }
+
         protected override async Task OnInitializedAsync()
         {
+            if ((await Data.GetSongs(null)).Count == 0)
+            {
+                IsLibraryLoaded = false;
+                return;
+            }
+            IsLibraryLoaded = true;
             await UpdateLibrary(Data.Filter);
             await base.OnInitializedAsync();
         }
@@ -74,6 +90,7 @@ namespace Blazor.Song.Net.Client.Pages
 
         private async Task UpdateLibrary(string filter)
         {
+
             TrackListFiltered = await Data.GetSongs(filter);
         }
     }
