@@ -1,59 +1,223 @@
+// Ignore Spelling: Podcast
+
 using Azure;
 using Azure.Storage.Files.Shares;
 using Azure.Storage.Files.Shares.Models;
 using Blazor.Song.Net.Shared;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using System;
-using System.Text;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Configuration;
 
 namespace Blazor.Song.Indexer
 {
     public class AzureTrackParserService : ITrackParserService
     {
-        string _libraryFile = "tracks.json";
-        private string _blobConnectionstring;
         private const string _channelListFile = "channelList.json";
+        private const string _directoryRoot = "/";
         private const string _episodeListFile = "downloadedEpisodes.json";
+        private const string _libraryFile = "tracks.json";
+        private const string _musicsharename = "music";
+        private const string _podcastsharename = "podcast";
+        private const int BLOCK_SIZE = 16 * 1024;
+        private readonly string _blobConnectionstring;
 
-
-        public AzureTrackParserService(IConfiguration configuration) 
+        public AzureTrackParserService(IConfiguration configuration)
         {
             _blobConnectionstring = configuration.GetSection("azure.blobconnectionstring").Value;
         }
+
+        public async Task<byte[]> Download(string path)
+        {
+            (string sharename, string directoryname, string filename) = GetPathParts(path);
+            return await GetFileByteAsync(sharename, directoryname, filename);
+        }
+
+        public async Task<string> GetChannelEpisode(int collectionId, string link, long id)
+        {
+            ShareClient share = GetShare(_podcastsharename);
+            ShareDirectoryClient feedDirectory = share.GetDirectoryClient(collectionId.ToString());
+
+            if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uriResult))
+            {
+                return Path.Join(".", Path.Join(link.Split(Path.AltDirectorySeparatorChar).Skip(1).ToArray()));
+            }
+            string urlFileName = uriResult.Segments.Last();
+
+            if (feedDirectory.Exists() && feedDirectory.GetFilesAndDirectories($"*{id}_{urlFileName}").Any())
+            {
+                return $"/{_podcastsharename}/{collectionId}/{id}_{urlFileName}";
+            }
+            if (!feedDirectory.Exists())
+            {
+                feedDirectory.Create();
+            }
+
+            try
+            {
+                using (Stream stream = await DownloadFromUrlToStream(link))
+                {
+                    ShareFileClient file = feedDirectory.GetFileClient($"{id}_{urlFileName}");
+                    UploadStreamToFile(stream, file);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return $"/{_podcastsharename}/{collectionId}/{id}_{urlFileName}";
+        }
+
+        public Tuple<string, string, string> GetPathParts(string path)
+        {
+            string sharename;
+            if (path.StartsWith("/music"))
+            {
+                path = path.Substring("/music".Length);
+                sharename = _musicsharename;
+            }
+            else if (path.StartsWith("/podcast"))
+            {
+                path = path.Substring("/podcast".Length);
+                sharename = _podcastsharename;
+            }
+            else
+            {
+                throw new FormatException();
+            }
+            int directorySeparator = path.LastIndexOf(_directoryRoot);
+            string directoryname = path[..directorySeparator];
+            string filename = path[(directorySeparator + 1)..];
+            return new Tuple<string, string, string>(sharename, directoryname, filename);
+        }
+
+        public string GetPodcastChannelListContent()
+        {
+            return GetFileContent(_podcastsharename, _directoryRoot, _channelListFile);
+        }
+
+        public string GetPodcastDownloadedEpisodesContent()
+        {
+            return GetFileContent(_podcastsharename, _directoryRoot, _episodeListFile);
+        }
+
+        public string GetTrackContent()
+        {
+            return GetFileContent(_musicsharename, _directoryRoot, _libraryFile);
+        }
+
+        public string GetTrackData()
+        {
+            int counter = 0;
+
+            ShareClient share = GetShare(_musicsharename);
+            ShareDirectoryClient directory = share.GetDirectoryClient(_directoryRoot);
+            Azure.Pageable<Azure.Storage.Files.Shares.Models.ShareFileItem> files = directory.GetFilesAndDirectories();
+            IEnumerable<ShareFileClient> trackEnum = GetShareFiles(_directoryRoot, new string[] { ".mp3", ".ogg", ".flac" });
+            int numberOfTracks = trackEnum.Count();
+            var allTracks = trackEnum.AsParallel()
+                    .Select((musicFilePath, index) =>
+                    {
+                        counter++;
+                        return GetTrackInfo(musicFilePath, index);
+                    }).ToArray();
+            return JsonConvert.SerializeObject(allTracks);
+        }
+
+        public TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
+        {
+            (string sharename, string directoryname, string filename) = GetPathParts(musicFilePath);
+            ShareFileClient musicFile = GetShare(sharename).GetDirectoryClient(directoryname).GetFileClient(filename);
+            return GetTrackInfo(musicFile, index);
+        }
+
         public bool IsLibraryFileExists()
         {
-            ShareClient share = GetShare("music");
+            ShareClient share = GetShare(_musicsharename);
             ShareDirectoryClient directory = share.GetDirectoryClient("/");
             ShareFileClient file = directory.GetFileClient(_libraryFile);
             return file.Exists();
         }
 
+        public void UpdateChannelFile(string fileContent)
+        {
+            UploadFile(_podcastsharename, _directoryRoot, _channelListFile, fileContent);
+        }
+
+        public void UpdateEpisodeFile(string episodeFileContent)
+        {
+            UploadFile(_podcastsharename, _directoryRoot, _episodeListFile, episodeFileContent);
+        }
+
         public void UpdateTrackData()
         {
             string fileContent = GetTrackData();
-            UploadFile("/", _libraryFile, fileContent);
+            UploadFile(_musicsharename, _directoryRoot, _libraryFile, fileContent);
         }
 
-        public string GetTrackContent()
+        private static void UploadStreamToFile(Stream stream, ShareFileClient file)
         {
-            return GetFileContent("music", "/", _libraryFile);
+            stream.Position = 0;
+
+            if (file.Exists())
+            {
+                file.Delete();
+            }
+            file.Create(stream.Length);
+
+            using (BinaryReader reader = new BinaryReader(stream))
+            {
+                int offset = 0;
+                while (true)
+                {
+                    byte[] buffer = reader.ReadBytes(16 * 1024);
+                    if (buffer.Length == 0)
+                        break;
+
+                    MemoryStream uploadChunk = new();
+                    uploadChunk.Write(buffer, 0, buffer.Length);
+                    uploadChunk.Position = 0;
+
+                    HttpRange httpRange = new(offset, buffer.Length);
+                    Response<ShareFileUploadInfo> resp = file.UploadRange(httpRange, uploadChunk);
+                    offset += buffer.Length;
+                }
+            }
         }
 
-        public string GetPodcastChannelListContent()
+        private async Task<Stream> DownloadFromUrlToStream(string url)
         {
-            return GetFileContent("podcast", "/", _channelListFile);
+            using (HttpClient httpClient = new HttpClient())
+            {
+                Uri uri = new Uri(url);
+                var response = await httpClient.GetAsync(uri);
+                MemoryStream ms = new();
+                await response.Content.CopyToAsync(ms);
+                return ms;
+            }
         }
 
-        public string GetPodcastDownloadedEpisodesContent()
+        private async Task<byte[]> GetFileByteAsync(string sharename, string directoryname, string filename)
         {
-            return GetFileContent("podcast", "/", _episodeListFile);
+            ShareClient share = GetShare(sharename);
+            ShareDirectoryClient directory = share.GetDirectoryClient(directoryname);
+            ShareFileClient file = directory.GetFileClient(filename);
+            byte[] buffer = new byte[BLOCK_SIZE];
+            using (Stream stream = await file.OpenReadAsync())
+            using (MemoryStream ms = new())
+            {
+                int read;
+                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    await ms.WriteAsync(buffer, 0, read);
+                }
+                return ms.ToArray();
+            }
         }
 
         private string GetFileContent(string sharename, string directoryname, string filename)
@@ -65,7 +229,7 @@ namespace Blazor.Song.Indexer
             using (var stream = file.OpenRead())
             using (var reader = new StreamReader(stream))
             {
-                // read csv file one line by line 
+                // read csv file one line by line
                 while (!reader.EndOfStream)
                 {
                     return reader.ReadToEnd();
@@ -74,16 +238,33 @@ namespace Blazor.Song.Indexer
             return null;
         }
 
-        private static IEnumerable<ShareFileClient> GetShareFiles(string directoryName, string[] extensions)
+        private async Task<string> GetFileContentAsync(string sharename, string directoryname, string filename)
         {
-            List<ShareFileClient> foundFiles = new List<ShareFileClient>();
-            string connectionString = "";
+            ShareClient share = GetShare(sharename);
+            ShareDirectoryClient directory = share.GetDirectoryClient(directoryname);
+            ShareFileClient file = directory.GetFileClient(filename);
 
-            // Name of the share, directory
-            string shareName = "media";
+            using (var stream = await file.OpenReadAsync())
+            using (var reader = new StreamReader(stream))
+            {
+                while (!reader.EndOfStream)
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+            return null;
+        }
 
-            // Get a reference to a share
-            ShareClient share = new ShareClient(connectionString, shareName);
+        private ShareClient GetShare(string name)
+        {
+            ShareClient share = new ShareClient(_blobConnectionstring, name);
+            return share;
+        }
+
+        private IEnumerable<ShareFileClient> GetShareFiles(string directoryName, string[] extensions)
+        {
+            List<ShareFileClient> foundFiles = new();
+            ShareClient share = GetShare(_musicsharename);
 
             ShareDirectoryClient directory = share.GetDirectoryClient(directoryName);
             var files = directory.GetFilesAndDirectories();
@@ -103,29 +284,7 @@ namespace Blazor.Song.Indexer
             return foundFiles;
         }
 
-        public string GetTrackData()
-        {
-
-            int counter = 0;
-
-            ShareClient share = GetShare("music");
-            // Get a reference to a directory and create it
-            ShareDirectoryClient directory = share.GetDirectoryClient("/");
-            Azure.Pageable<Azure.Storage.Files.Shares.Models.ShareFileItem> files = directory.GetFilesAndDirectories();
-            IEnumerable<ShareFileClient> trackEnum = GetShareFiles("/", new string[] { ".mp3", ".ogg", ".flac" });
-            int numberOfTracks = trackEnum.Count();
-            var allTracks = trackEnum.AsParallel()
-                    .Select((musicFilePath, index) =>
-                    {
-                        counter++;
-                        return GetTrackInfo(musicFilePath, index);
-                    }).ToArray();
-            return JsonConvert.SerializeObject(allTracks);
-        }
-
-     
-
-        public static TrackInfo GetTrackInfo(ShareFileClient musicFile, int index)
+        private TrackInfo GetTrackInfo(ShareFileClient musicFile, int index)
         {
             TagLib.File tagMusicFile = TagLib.File.Create(new FileAzureBlobAbstraction(musicFile));
 
@@ -143,80 +302,19 @@ namespace Blazor.Song.Indexer
             };
         }
 
-        private ShareClient GetShare(string name)
+        private void UploadFile(string sharename, string directoryName, string fileName, string content)
         {
-            // Name of the share, directory, and file we'll create
-            string shareName = "music";
-
-            // Get a reference to a share and then create it
-            ShareClient share = new ShareClient(_blobConnectionstring, name);
-
-            return share;
-        }
-
-        private void UploadFile(string directoryName, string fileName, string content)
-        {
-            ShareClient share = GetShare("music");
-            // Get a reference to a directory and create it
+            ShareClient share = GetShare(sharename);
             ShareDirectoryClient directory = share.GetDirectoryClient(directoryName);
-
-            // Get a reference to a file and upload it
             ShareFileClient file = directory.GetFileClient(fileName);
             using (MemoryStream stream = new MemoryStream())
             {
                 StreamWriter writer = new StreamWriter(stream);
                 writer.Write(content);
                 writer.Flush();
-                stream.Position = 0;
 
-                file.Create(stream.Length);
-                file.UploadRange(new HttpRange(0, stream.Length), stream);
+                UploadStreamToFile(stream, file);
             }
-        }
-
-        public async Task<string> GetChannelEpisode(int collectionId, string link, long id)
-        {
-            return await GetFileContentAsync("podcast", "/", _channelListFile);
-        }
-
-        private async Task<string> GetFileContentAsync(string sharename, string directoryname, string filename)
-        {
-            ShareClient share = GetShare(sharename);
-            ShareDirectoryClient directory = share.GetDirectoryClient(directoryname);
-            ShareFileClient file = directory.GetFileClient(filename);
-
-            using (var stream = await file.OpenReadAsync())
-            using (var reader = new StreamReader(stream))
-            {
-                // read csv file one line by line 
-                while (!reader.EndOfStream)
-                {
-                    return reader.ReadToEnd();
-                }
-            }
-            return null;
-
-        }
-
-        private void UpdateFile(string sharename, string directoryname, string filename, string fileContent) 
-        {
-            ShareClient share = GetShare(sharename);
-            ShareDirectoryClient directory = share.GetDirectoryClient(directoryname);
-            ShareFileClient file = directory.GetFileClient(filename);
-            using (Stream stream = file.OpenWrite(true, 0))
-            {
-                stream.Write(Encoding.Default.GetBytes(fileContent));
-            }
-        }
-
-        public void UpdateChannelFile(string fileContent)
-        {
-            UpdateFile("podcast", "/", _channelListFile, fileContent);
-        }
-
-        public void UpdateEpisodeFile(string episodeFileContent)
-        {
-            UpdateFile("podcast", "/", _episodeListFile, episodeFileContent);
         }
     }
 }

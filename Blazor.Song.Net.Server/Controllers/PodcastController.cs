@@ -28,8 +28,7 @@ namespace Blazor.Song.Net.Server.Controllers
         [HttpGet("[action]")]
         public async Task<ActionResult> GetChannelEpisode(int collectionId, string link, long id)
         {
-            string episodeFile = await _podcastStore.GetChannelEpisodeFile(collectionId, link, id);
-            byte[] file = await _fileHelper.ReadFile(episodeFile);
+            byte[] file = await _podcastStore.GetChannelEpisodeFile(collectionId, link, id);
             return File(file, "audio/mpeg");
         }
 

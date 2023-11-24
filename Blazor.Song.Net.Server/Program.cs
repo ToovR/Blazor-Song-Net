@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-bool isAzure =Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") != null;
+bool isAzure = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") != null;
 builder.Services.AddServerServices(isAzure);
 
 var app = builder.Build();

@@ -18,6 +18,10 @@ namespace Blazor.Song.Net.Server.Services
 {
     public class PodcastStore : IPodcastStore
     {
+        private const string _podcastFolder = "./podcasts/";
+        private readonly ITrackParserService _trackParserService;
+        private List<PodcastChannel> _channels;
+        private List<TrackInfo> _episodesInfo;
         private IMemoryCache _memoryCache;
 
         public PodcastStore(IMemoryCache memoryCache, ITrackParserService trackParserService)
@@ -29,16 +33,11 @@ namespace Blazor.Song.Net.Server.Services
             LoadEpisodeInfo();
         }
 
-        private const string _podcastFolder = "./podcasts/";
-        private readonly ITrackParserService _trackParserService;
-        private List<PodcastChannel> _channels;
-        private List<TrackInfo> _episodesInfo;
-
-        public static XmlReader GenerateXmlReaderFromString(string s)
+        public static XmlReader GenerateXmlReaderFromString(string content)
         {
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
-            writer.Write(s);
+            writer.Write(content);
             writer.Flush();
             stream.Position = 0;
             return XmlReader.Create(stream);
@@ -64,11 +63,11 @@ namespace Blazor.Song.Net.Server.Services
             }
         }
 
-        public async Task<string> GetChannelEpisodeFile(int collectionId, string link, long id)
+        public async Task<byte[]> GetChannelEpisodeFile(int collectionId, string link, long id)
         {
             string path = await _trackParserService.GetChannelEpisode(collectionId, link, id);
             Feed feed = GetFeed(collectionId);
-            TrackInfo episodeInfo = LocalTrackParserService.GetTrackInfo(path, path.GetHashCode(), new Uri(Directory.GetCurrentDirectory()));
+            TrackInfo episodeInfo = _trackParserService.GetTrackInfo(path, path.GetHashCode());
 
             episodeInfo.Id = id;
             FeedItem item = feed.Items.Single(item => item.Id == id);
@@ -79,42 +78,14 @@ namespace Blazor.Song.Net.Server.Services
             episodeInfo.DownloadPath = path;
             SaveEpisodeInfo();
 
-            if (episodeInfo.Id != 0) 
+            if (episodeInfo.Id != 0)
             {
                 _episodesInfo.Add(episodeInfo);
             }
-            return episodeInfo.DownloadPath;
+
+            return await _trackParserService.Download(episodeInfo.DownloadPath);
         }
 
-        private void SaveEpisodeInfo()
-        {
-            try
-            {
-                string episodeFileContent = JsonSerializer.Serialize<List<TrackInfo>>(_episodesInfo);
-                _trackParserService.UpdateEpisodeFile(episodeFileContent);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        public Feed GetFeed(long collectionId)
-        {
-            var channel = _channels.SingleOrDefault(c => c.CollectionId == collectionId);
-            if (channel == null)
-                return null;
-            string feedContent = null;
-            if (!_memoryCache.TryGetValue(channel.FeedUrl, out feedContent))
-            {
-                using (WebClient client = new WebClient())
-                {
-                    feedContent = client.DownloadString(channel.FeedUrl);
-                    _memoryCache.Set(channel.FeedUrl, feedContent);
-                }
-            }
-            SyndicationFeed sfeed = SyndicationFeed.Load(GenerateXmlReaderFromString(feedContent));
-            return sfeed.ToFeed();
-        }
         public Feed GetChannelEpisodes(long collectionId)
         {
             try
@@ -126,7 +97,9 @@ namespace Blazor.Song.Net.Server.Services
                 {
                     var episodeInfo = _episodesInfo.FirstOrDefault(e => e.Title == i.Title);
                     if (episodeInfo != null)
+                    {
                         i.Duration = episodeInfo.Duration;
+                    }
                 });
 
                 return feed;
@@ -144,6 +117,24 @@ namespace Blazor.Song.Net.Server.Services
             return _channels.Where(c => c.CollectionName.Contains(filter, StringComparison.InvariantCultureIgnoreCase)).ToArray();
         }
 
+        public Feed GetFeed(long collectionId)
+        {
+            PodcastChannel channel = _channels.SingleOrDefault(c => c.CollectionId == collectionId);
+            if (channel == null)
+                return null;
+            string feedContent = null;
+            if (!_memoryCache.TryGetValue(channel.FeedUrl, out feedContent))
+            {
+                using (WebClient client = new())
+                {
+                    feedContent = client.DownloadString(channel.FeedUrl);
+                    _memoryCache.Set(channel.FeedUrl, feedContent);
+                }
+            }
+            SyndicationFeed sfeed = SyndicationFeed.Load(GenerateXmlReaderFromString(feedContent));
+            return sfeed.ToFeed();
+        }
+
         public async Task<PodcastChannelResponse> GetNewChannels(string filter)
         {
             using var httpClient = new HttpClient();
@@ -157,7 +148,6 @@ namespace Blazor.Song.Net.Server.Services
             return _episodesInfo.Where(episodeInfo => ids.Contains(episodeInfo.Id));
         }
 
-      
         private void LoadChannels()
         {
             if (!Directory.Exists(_podcastFolder))
@@ -176,7 +166,6 @@ namespace Blazor.Song.Net.Server.Services
         {
             try
             {
-                
                 _episodesInfo = JsonSerializer.Deserialize<List<TrackInfo>>(_trackParserService.GetPodcastDownloadedEpisodesContent());
             }
             catch (Exception)
@@ -185,6 +174,17 @@ namespace Blazor.Song.Net.Server.Services
             }
         }
 
-      
+        private void SaveEpisodeInfo()
+        {
+            try
+            {
+                string episodeFileContent = JsonSerializer.Serialize<List<TrackInfo>>(_episodesInfo);
+                _trackParserService.UpdateEpisodeFile(episodeFileContent);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

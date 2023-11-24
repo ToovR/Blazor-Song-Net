@@ -8,7 +8,7 @@ namespace Blazor.Song.Net.Server.Services
     {
         Task AddNewChannel(PodcastChannel podcast);
 
-        Task<string> GetChannelEpisodeFile(int collectionId, string link, long id);
+        Task<byte[]> GetChannelEpisodeFile(int collectionId, string link, long id);
 
         Feed GetChannelEpisodes(long collectionId);
 

@@ -11,20 +11,17 @@ namespace Blazor.Song.Net.Server.Controllers
     [Route("api/[controller]")]
     public class LibraryController : ControllerBase
     {
-        public LibraryController(IFileHelper fileHelper, ILibraryStore libraryStore)
+        public LibraryController(ILibraryStore libraryStore)
         {
-            _fileHelper = fileHelper;
             _libraryStore = libraryStore;
         }
 
-        private readonly IFileHelper _fileHelper;
         private readonly ILibraryStore _libraryStore;
-        private readonly string directoryRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
 
         [HttpGet("[action]")]
         public async Task<ActionResult> Download(string path)
         {
-            byte[] file = await _fileHelper.ReadFile(Path.Combine(directoryRoot, path.Trim('/').Replace("/", "\\")));
+            byte[] file = await _libraryStore.Download(path);  
             return File(file, "audio/mpeg");
         }
 

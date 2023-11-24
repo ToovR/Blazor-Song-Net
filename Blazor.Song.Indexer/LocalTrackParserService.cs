@@ -24,8 +24,12 @@ namespace Blazor.Song.Indexer
         private string _libraryFile = "./tracks.json";
 
 
-        public static TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot)
+        public TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
         {
+            if (folderRoot == null) 
+            {
+                folderRoot = new Uri(Directory.GetCurrentDirectory());
+            }
             FileInfo musicFileInfo = new FileInfo(musicFilePath);
             TagLib.File tagMusicFile = TagLib.File.Create(new TagMusicFile(musicFileInfo.FullName));
 
@@ -132,6 +136,24 @@ namespace Blazor.Song.Indexer
         public void UpdateEpisodeFile(string episodeFileContent)
         {
             UpdateFile(_episodeListFile, episodeFileContent);
+        }
+
+        private readonly string _directoryMusicRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+
+
+        private async Task<byte[]> ReadFile(string path)
+        {
+            using (FileStream s = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                byte[] buffer = new byte[s.Length];
+                await s.ReadAsync(buffer, 0, (int)s.Length);
+                return buffer;
+            }
+        }
+
+        public async Task<byte[]> Download(string path)
+        {
+            return await ReadFile(Path.Combine(_directoryMusicRoot, path.Trim('/').Replace("/", "\\")));
         }
     }
 }

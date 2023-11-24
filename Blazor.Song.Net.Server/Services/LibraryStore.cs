@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Server.Services
 {
@@ -17,6 +18,11 @@ namespace Blazor.Song.Net.Server.Services
         public LibraryStore(ITrackParserService trackParser)
         {
             _trackParser = trackParser;
+        }
+
+        public async Task<byte[]> Download(string path)
+        {
+            return await _trackParser.Download(path);
         }
 
         public IEnumerable<TrackInfo> GetTracks(IEnumerable<long> ids)
