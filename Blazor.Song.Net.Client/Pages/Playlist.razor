@@ -1,7 +1,7 @@
 ﻿@page "/"
 @page "/playlist"
 
-<SongList Tracks="@PlaylistTracks.ToList()" CurrentTrack=@Data.CurrentTrack>
+<SongList @rendermode="@RenderMode.Auto" Tracks="@PlaylistTracks.ToList()" CurrentTrack=@Data.CurrentTrack>
     <RowTemplate>
         @{
             string current = "";
