@@ -41,6 +41,12 @@
                                         {
                                             <td><button class="column button is-info" @onclick="(e => SubscribeToPodcast(channel.CollectionId))"><i class="fa fa-plus"></i></button></td>
                                         }
+                                        <td style="width:30px">
+                                            @if (channel.IsLoading)
+                                            {
+                                                <div class="spinner" style="width:20px;height:20px;"></div>
+                                            }
+                                        </td>
                                     </tr>
                                 }
                             }
@@ -73,10 +79,10 @@
                         <td>@context.Title</td>
                         <td>@context.Artist</td>
                         <td>
-                        @if (context.Duration != TimeSpan.Zero)
-                        {
-                            <span>@context.Duration.ToString("mm\\:ss")</span>
-                        }
+                            @if (context.Duration != TimeSpan.Zero)
+                            {
+                                <span>@context.Duration.ToString("mm\\:ss")</span>
+                            }
                         </td>
                     </tr>
                 </RowTemplate>

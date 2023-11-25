@@ -10,6 +10,10 @@
       "provider": "jsdelivr",
       "library": "bulma@0.8.1",
       "destination": "wwwroot/lib/bulma/"
+    },
+    {
+      "library": "howler@2.2.4",
+      "destination": "wwwroot/lib/howler/"
     }
   ]
 }

@@ -9,14 +9,12 @@ namespace Blazor.Song.Net.Server.Controllers
     [Route("api/[controller]")]
     public class PodcastController : ControllerBase
     {
-        public PodcastController(IFileHelper fileHelper, IPodcastStore podcastStore)
+        private readonly IPodcastStore _podcastStore;
+
+        public PodcastController(IPodcastStore podcastStore)
         {
-            _fileHelper = fileHelper;
             _podcastStore = podcastStore;
         }
-
-        private readonly IFileHelper _fileHelper;
-        private readonly IPodcastStore _podcastStore;
 
         [HttpGet("[action]")]
         public PodcastChannel[] Channels(string filter)
@@ -33,9 +31,9 @@ namespace Blazor.Song.Net.Server.Controllers
         }
 
         [HttpGet("[action]")]
-        public Feed GetChannelEpisodes(Int64 collectionId)
+        public async Task<Feed> GetChannelEpisodes(Int64 collectionId)
         {
-            Feed feed = _podcastStore.GetChannelEpisodes(collectionId);
+            Feed feed = await _podcastStore.GetChannelEpisodes(collectionId);
             return feed;
         }
 
@@ -47,7 +45,7 @@ namespace Blazor.Song.Net.Server.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task NewChannels([FromBody]PodcastChannel podcast)
+        public async Task NewChannels([FromBody] PodcastChannel podcast)
         {
             await _podcastStore.AddNewChannel(podcast);
         }

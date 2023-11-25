@@ -10,7 +10,7 @@ namespace Blazor.Song.Net.Server.Services
 
         Task<byte[]> GetChannelEpisodeFile(int collectionId, string link, long id);
 
-        Feed GetChannelEpisodes(long collectionId);
+        Task<Feed> GetChannelEpisodes(long collectionId);
 
         PodcastChannel[] GetChannels(string filter);
 

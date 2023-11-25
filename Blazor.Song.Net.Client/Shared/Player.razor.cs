@@ -88,9 +88,9 @@ namespace Blazor.Song.Net.Client.Shared
         private async Task UpdateTitle(TrackInfo info)
         {
             if (info != null)
-                await Document.UpdateTitle($"{info.Title}, {info.Artist} - Blazor Song.Net");
+                await Document.UpdateTitle($"{info.Title}, {info.Artist} - song.net");
             else
-                await Document.UpdateTitle("Blazor Song.Net");
+                await Document.UpdateTitle("song.net");
         }
     }
 }

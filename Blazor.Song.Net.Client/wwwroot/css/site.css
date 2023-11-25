@@ -1,6 +1,4 @@
-﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
-
-.frame {
+﻿.frame {
     background: black;
     opacity: 0.8;
 }
@@ -54,11 +52,11 @@
     width: 100%;
 }
 
-.table-container table thead th .text {
-    position: absolute;
-    top: 0px;
-    z-index: 2;
-}
+    .table-container table thead th .text {
+        position: absolute;
+        top: 0px;
+        z-index: 2;
+    }
 
 #library .table-scroll {
     height: 400px;
@@ -66,4 +64,30 @@
 
 .label {
     color: limegreen;
+}
+
+input[type=range][orient=vertical] {
+    appearance: slider-vertical;
+    width: 8px;
+    height: 175px;
+    padding: 0 5px;
+}
+
+.spinner {
+    border: 6px solid silver;
+    border-top: 6px solid #337AB7;
+    border-radius: 50%;
+    animation: spin 700ms linear infinite;
+    top: 40%;
+    left: 55%;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg)
+    }
+
+    100% {
+        transform: rotate(360deg)
+    }
 }

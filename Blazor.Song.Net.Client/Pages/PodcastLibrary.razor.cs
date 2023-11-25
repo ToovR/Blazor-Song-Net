@@ -45,6 +45,7 @@ namespace Blazor.Song.Net.Client.Pages
 
         public async Task ClickChannelRow(PodcastChannel channel)
         {
+            channel.IsLoading = true;
             var feed = await Data.GetEpisodes(channel.CollectionId);
             CurrentChannelSummary = new ChannelSummary
             {
@@ -53,6 +54,7 @@ namespace Blazor.Song.Net.Client.Pages
                 ImageUrl = feed.ImageUrl,
             };
             EpisodesFiltered = feed.Items.Select(i => i.ToTrackInfo(channel)).ToList();
+            channel.IsLoading = false;
         }
 
         public void DoubleclickPlaylistRow(TrackInfo track)

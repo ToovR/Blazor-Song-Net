@@ -2,34 +2,91 @@
 
 window.audioElement = () => { };
 
-window.audioElement.play = (id) => {
-    document.getElementById(id).play();
+var sound;
+
+var bassFilter;
+
+var trebleFilter;
+
+initHowler = () => {
+    if (bassFilter != undefined) {
+        return;
+    }
+    bassFilter = Howler.ctx.createBiquadFilter();
+    bassFilter.type = "lowshelf";
+    bassFilter.frequency.value = 200;
+    bassFilter.gain.value = 0;
+
+    trebleFilter = Howler.ctx.createBiquadFilter();
+    trebleFilter.type = "highshelf";
+    trebleFilter.frequency.value = 2000;
+    trebleFilter.gain.value = 0;
+
+    bassFilter.connect(trebleFilter);
+}
+
+window.audioElement.get_bass = () => {
+    if (bassFilter == undefined) {
+        return 0;
+    }
+    return bassFilter.gain.value;
+}
+
+window.audioElement.get_currentTime = () => {
+    return sound.seek();
 };
 
-window.audioElement.pause = (id) => {
-    document.getElementById(id).pause();
+window.audioElement.get_treble = () => {
+    if (trebleFilter == undefined) {
+        return 0;
+    }
+    return trebleFilter.gain.value;
+}
+
+window.audioElement.onended = () => {
 };
 
-window.audioElement.load = (id) => {
-    document.getElementById(id).load();
+window.audioElement.play = (trackPath) => {
+    if (sound == undefined || trackPath != sound._src) {
+        if (sound != undefined) {
+            sound.pause();
+            sound.unload();
+        }
+        sound = new Howl({
+            src: [trackPath],
+            onend: function () {
+                DotNet.invokeMethod('Blazor.Song.Net.Client', 'AudioEnded');
+            }
+        });
+
+        initHowler();
+
+        const gainNode = sound._sounds[0]._node;
+        gainNode.disconnect(Howler.masterGain);
+        gainNode.connect(bassFilter);
+        bassFilter.connect(trebleFilter);
+        trebleFilter.connect(Howler.masterGain);
+    }
+    sound.play();
 };
 
-window.audioElement.get_currentTime = (id) => {
-    return document.getElementById(id).currentTime;
+window.audioElement.pause = () => {
+    sound.pause();
 };
 
-window.audioElement.set_currentTime = (id, value) => {
-    var audioElement = document.getElementById(id);
-    if (!isNaN(audioElement.duration)) {
-        audioElement.currentTime = value;
+window.audioElement.set_bass = (value) => {
+    bassFilter.gain.value = value;
+}
+
+window.audioElement.set_currentTime = (value) => {
+    if (sound.playing()) {
+        sound.seek(value);
     }
 };
 
-window.audioElement.onended = (id) => {
-    document.getElementById(id).onended = function () {
-        DotNet.invokeMethod('Blazor.Song.Net.Client', 'AudioEnded');
-    };
-};
+window.audioElement.set_treble = (value) => {
+    trebleFilter.gain.value = value;
+}
 
 window.classElement = () => { };
 

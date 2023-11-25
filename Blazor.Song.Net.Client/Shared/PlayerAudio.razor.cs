@@ -1,4 +1,5 @@
-﻿using Blazor.Song.Net.Client.Wrap;
+﻿using Blazor.Song.Net.Client.Services;
+using Blazor.Song.Net.Client.Wrap;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -9,8 +10,10 @@ namespace Blazor.Song.Net.Client.Shared
 {
     public partial class PlayerAudio : ComponentBase
     {
-        private AudioElement _audio = null;
         private bool _isPlaying;
+
+        [Inject]
+        public AudioService AudioService { get; set; }
 
         [Parameter]
         public bool IsPlaying
@@ -33,41 +36,39 @@ namespace Blazor.Song.Net.Client.Shared
         public IJSRuntime JsRuntime { get; set; }
 
         [Inject]
+        public NavigationManager NavigationManager { get; set; }
+
+        [Inject]
         protected Services.IDataManager Data { get; set; }
 
         [CascadingParameter]
         protected ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
-        protected TrackInfo Track { get { return Data.CurrentTrack; } }
+        protected TrackInfo Track
+        { get { return Data.CurrentTrack; } }
 
         public async Task AddTime(int numberOfSeconds)
         {
-            await SetTime(await _audio.GetCurrentTime() + numberOfSeconds);
+            await AudioService.AddTime(numberOfSeconds, Track.Duration.TotalSeconds);
         }
 
         public async Task<double> GetCurrentTime()
         {
-            return await _audio.GetCurrentTime();
+            return await AudioService.GetCurrentTime();
         }
 
         public async Task SetTime(double newTime)
         {
-            if (newTime < 0)
-                newTime = 0;
-            if (newTime > Track.Duration.TotalSeconds)
-                newTime = (int)Track.Duration.TotalSeconds;
-            await _audio.SetCurrentTime(newTime);
+            await AudioService.SetTime(newTime, Track.Duration.TotalSeconds);
         }
 
         protected override void OnAfterRender(bool firstRender)
         {
             base.OnAfterRender(firstRender);
-            _audio = new AudioElement("playerAudio", JsRuntime);
         }
 
         protected override async Task OnInitializedAsync()
         {
-            _audio = new AudioElement("playerAudio", JsRuntime);
             Data.CurrentTrackChanged += CurrentTrackChanged;
             AudioElement.OnEnded += OnEnded;
             await base.OnInitializedAsync();
@@ -77,12 +78,13 @@ namespace Blazor.Song.Net.Client.Shared
         {
             this.StateHasChanged();
             if (Track == null)
-                return;
-            await _audio.Load().ContinueWith((e) =>
             {
-                if (IsPlaying)
-                    _audio.Play();
-            });
+                return;
+            }
+            if (IsPlaying)
+            {
+                AudioService.Play($"{NavigationManager.BaseUri}/{Track.Path}");
+            }
         }
 
         private async Task CurrentTrackChanged(TrackInfo track)
@@ -93,9 +95,13 @@ namespace Blazor.Song.Net.Client.Shared
         private void ModifyPlayPause(bool isPlaying)
         {
             if (isPlaying)
-                _audio.Play();
+            {
+                AudioService.Play($"{NavigationManager.BaseUri}/{Track.Path}");
+            }
             else
-                _audio.Pause();
+            {
+                AudioService.Pause();
+            }
         }
 
         private void OnEnded()
