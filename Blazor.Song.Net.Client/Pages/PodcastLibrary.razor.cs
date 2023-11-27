@@ -1,3 +1,4 @@
+using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Client.Shared;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
@@ -41,10 +42,11 @@ namespace Blazor.Song.Net.Client.Pages
         public List<TrackInfo> TrackListFiltered { get; set; }
 
         [Inject]
-        private Services.IDataManager Data { get; set; }
+        private IDataManager Data { get; set; }
 
         public async Task ClickChannelRow(PodcastChannel channel)
         {
+            channel.IsLoading = true;
             var feed = await Data.GetEpisodes(channel.CollectionId);
             CurrentChannelSummary = new ChannelSummary
             {
@@ -53,6 +55,7 @@ namespace Blazor.Song.Net.Client.Pages
                 ImageUrl = feed.ImageUrl,
             };
             EpisodesFiltered = feed.Items.Select(i => i.ToTrackInfo(channel)).ToList();
+            channel.IsLoading = false;
         }
 
         public void DoubleclickPlaylistRow(TrackInfo track)

@@ -1,4 +1,5 @@
-﻿using Blazor.Song.Net.Shared;
+﻿using Blazor.Song.Net.Client.Interfaces;
+using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
@@ -13,17 +14,23 @@ namespace Blazor.Song.Net.Client.Services
 {
     public class DataManager : IDataManager
     {
+        private readonly HttpClient _client;
+
+        private TrackInfo _currentTrack;
+
         public DataManager(HttpClient client)
         {
             _client = client;
         }
 
-        private readonly HttpClient _client;
-        private TrackInfo _currentTrack;
-
         public delegate void PlaylistChangedDelegate();
 
         public event CurrentTrackChangedDelegate CurrentTrackChanged;
+
+        public string CurrentRenderMode
+        {
+            get { return "Client"; }
+        }
 
         public TrackInfo CurrentTrack
         {
@@ -51,8 +58,6 @@ namespace Blazor.Song.Net.Client.Services
             }
             else
             {
-                if (!File.Exists(trackInfo.Path))
-                    return;
                 await _client.GetByteArrayAsync(trackInfo.Path);
             }
         }
@@ -81,6 +86,11 @@ namespace Blazor.Song.Net.Client.Services
         public async Task<List<TrackInfo>> GetTracks(string idList)
         {
             return (await _client.GetFromJsonAsync<TrackInfo[]>($"api/Track/Tracks?ids={idList ?? ""}")).ToList();
+        }
+
+        public async Task<bool> LoadLibrary()
+        {
+            return await _client.GetFromJsonAsync<bool>($"api/Track/LoadLibrary");
         }
 
         public async Task SubscribeToPodcast(PodcastChannel podcastChannel)

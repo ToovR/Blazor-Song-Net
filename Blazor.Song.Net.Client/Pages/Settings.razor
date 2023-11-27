@@ -6,5 +6,30 @@
         <div class="control">
             <input class="input" type="text" placeholder="image url" @bind=ImageUrl />
         </div>
+
+        <div>
+            <table>
+                <tr>
+                    <td>
+                        <input type="range" min="-40" max="40" @bind=CurrentBass orient="vertical" />
+
+                    </td>
+                    <td>
+                        <input type="range" min="-40" max="40" @bind=CurrentTreble orient="vertical" />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Basse</label>
+                    </td>
+                    <td>
+                        <label>Aigus</label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div>
+        </div>
     </div>
 </div>

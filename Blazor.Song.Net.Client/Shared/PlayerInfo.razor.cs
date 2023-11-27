@@ -1,4 +1,6 @@
-﻿using Blazor.Song.Net.Client.Wrap;
+﻿using Blazor.Song.Net.Client.Interfaces;
+using Blazor.Song.Net.Client.Services;
+using Blazor.Song.Net.Client.Wrap;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -9,10 +11,10 @@ namespace Blazor.Song.Net.Client.Shared
     public partial class PlayerInfo : ComponentBase
     {
         [Inject]
-        public IJSRuntime JsRuntime { get; set; }
+        public IAudioService AudioService { get; set; }
 
-        [Parameter]
-        public PlayerAudio PlayerAudio { get; set; }
+        [Inject]
+        public IJSRuntime JsRuntime { get; set; }
 
         public int TimeStatus { get; set; }
 
@@ -28,7 +30,7 @@ namespace Blazor.Song.Net.Client.Shared
         }
 
         [Inject]
-        protected Services.IDataManager Data { get; set; }
+        protected IDataManager Data { get; set; }
 
         private TrackInfo CurrentTrack
         {
@@ -48,7 +50,7 @@ namespace Blazor.Song.Net.Client.Shared
             var element = new Element("songProgress", JsRuntime);
             int offsetWidth = await element.GetOffsetWidth();
             long newTime = (int)e.ClientX * ((int)CurrentTrack.Duration.TotalSeconds) / offsetWidth;
-            await PlayerAudio.SetTime((int)newTime);
+            await AudioService.SetTime((int)newTime, CurrentTrack.Duration.TotalSeconds);
         }
     }
 }

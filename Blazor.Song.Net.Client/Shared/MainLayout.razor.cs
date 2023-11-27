@@ -1,17 +1,28 @@
-﻿using Blazor.Song.Net.Shared;
+﻿using Blazor.Song.Net.Client.Interfaces;
+using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
-using System;
 using System.Collections.Specialized;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Shared
 {
     public class MainLayoutComponent : LayoutComponentBase
     {
+        protected string CurrentRenderMode
+        {
+            get
+            {
+                if (Data?.CurrentRenderMode == null)
+                {
+                    return string.Empty;
+                }
+                return Data?.CurrentRenderMode;
+            }
+        }
+
         protected ObservableList<TrackInfo> PlaylistTracks { get; set; } = new ObservableList<TrackInfo>();
 
         [Inject]
-        private Services.IDataManager Data { get; set; }
+        private IDataManager Data { get; set; }
 
         protected override async Task OnInitializedAsync()
         {

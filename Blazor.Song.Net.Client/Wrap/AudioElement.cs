@@ -3,11 +3,13 @@ using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Wrap
 {
-    public class AudioElement : Element
+    public class AudioElement
     {
-        public AudioElement(string id, IJSRuntime jsRuntime) : base(id, jsRuntime)
+        private readonly IJSRuntime _jsRuntime;
+
+        public AudioElement(IJSRuntime jsRuntime)
         {
-            JsRuntime.InvokeAsync<bool>("audioElement.onended", _id);
+            _jsRuntime = jsRuntime;
         }
 
         public delegate void OnEndedDelegate();
@@ -22,28 +24,43 @@ namespace Blazor.Song.Net.Client.Wrap
 
         public async Task<double> GetCurrentTime()
         {
-            double currentTime = await JsRuntime.InvokeAsync<double>("audioElement.get_currentTime", _id);
+            double currentTime = await _jsRuntime.InvokeAsync<double>("audioElement.get_currentTime");
             return currentTime;
-        }
-
-        public async Task Load()
-        {
-            await JsRuntime.InvokeAsync<bool>("audioElement.load", _id);
         }
 
         public void Pause()
         {
-            JsRuntime.InvokeAsync<bool>("audioElement.pause", _id);
+            _jsRuntime.InvokeAsync<bool>("audioElement.pause");
         }
 
-        public void Play()
+        public void Play(string trackPath)
         {
-            JsRuntime.InvokeAsync<bool>("audioElement.play", _id);
+            _jsRuntime.InvokeAsync<bool>("audioElement.play", trackPath);
+        }
+
+        public void SetBass(int value)
+        {
+            _jsRuntime.InvokeAsync<bool>("audioElement.set_bass", value);
         }
 
         public async Task SetCurrentTime(double value)
         {
-            await JsRuntime.InvokeAsync<bool>("audioElement.set_currentTime", _id, value);
+            await _jsRuntime.InvokeAsync<bool>("audioElement.set_currentTime", value);
+        }
+
+        public void SetTreble(int value)
+        {
+            _jsRuntime.InvokeAsync<bool>("audioElement.set_treble", value);
+        }
+
+        internal async Task<int> GetBass()
+        {
+            return await _jsRuntime.InvokeAsync<int>("audioElement.get_bass");
+        }
+
+        internal async Task<int> GetTreble()
+        {
+            return await _jsRuntime.InvokeAsync<int>("audioElement.get_treble");
         }
     }
 }

@@ -1,3 +1,4 @@
+using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Client.Shared;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
@@ -15,10 +16,10 @@ namespace Blazor.Song.Net.Client.Pages
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
         [Inject]
-        protected Services.IDataManager Data { get; set; }
+        protected IDataManager Data { get; set; }
 
         [Inject]
-        private IJSRuntime JsRuntime { get; set; }
+        protected IJsWrapperService JsWrapperService { get; set; }
 
         public void RemovePlaylistTrack(Int64 trackInfoId)
         {
@@ -36,6 +37,10 @@ namespace Blazor.Song.Net.Client.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            if (PlaylistTracks == null)
+            {
+                PlaylistTracks = new ObservableList<TrackInfo>();
+            }
             await LoadPlaylist();
             Data.CurrentTrackChanged += CurrentTrackChanged;
             PlaylistTracks.CollectionChanged += PlaylistChanged;
@@ -83,7 +88,11 @@ namespace Blazor.Song.Net.Client.Pages
 
         private async Task LoadPlaylist()
         {
-            Wrap.Cookie playlistCookie = new Wrap.Cookie("playlist", JsRuntime);
+            Wrap.Cookie playlistCookie = JsWrapperService.GetSavedPlaylist();
+            if (playlistCookie == null)
+            {
+                return;
+            }
             string sidList = await playlistCookie.Get();
             if (sidList != null)
                 (await Data.GetTracks(sidList)).ForEach(t =>
@@ -104,8 +113,7 @@ namespace Blazor.Song.Net.Client.Pages
         private async Task SavePlaylist()
         {
             string idList = string.Join("|", PlaylistTracks.Select(p => p.Id));
-            Wrap.Cookie playlistCookie = new Wrap.Cookie("playlist", JsRuntime);
-            await playlistCookie.Set(idList);
+            await JsWrapperService.SavePlaylist(idList);
         }
     }
 }

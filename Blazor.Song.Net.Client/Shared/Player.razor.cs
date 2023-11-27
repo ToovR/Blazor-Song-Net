@@ -1,16 +1,18 @@
-﻿using Blazor.Song.Net.Client.Wrap;
+﻿using Blazor.Song.Net.Client.Interfaces;
+using Blazor.Song.Net.Client.Wrap;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Shared
 {
     public partial class Player : ComponentBase
     {
-        protected PlayerAudio playerAudio;
         protected PlayerInfo playerInfo;
+        private bool _isPlaying;
+
+        [Inject]
+        public IAudioService AudioService { get; set; }
 
         public Document Document { get; private set; }
 
@@ -20,9 +22,23 @@ namespace Blazor.Song.Net.Client.Shared
         public IJSRuntime JsRuntime { get; private set; }
 
         [Inject]
-        protected Services.IDataManager Data { get; set; }
+        public NavigationManager NavigationManager { get; set; }
 
-        protected bool IsPlaying { get; set; }
+        [Inject]
+        protected IDataManager Data { get; set; }
+
+        protected bool IsPlaying
+        {
+            get
+            { return _isPlaying; }
+            set
+            {
+                if (_isPlaying == value)
+                    return;
+                _isPlaying = value;
+                ModifyPlayPause(_isPlaying);
+            }
+        }
 
         [CascadingParameter]
         private ObservableList<TrackInfo> PlaylistTracks { get; set; }
@@ -54,6 +70,7 @@ namespace Blazor.Song.Net.Client.Shared
             if (Data.CurrentTrack != null)
                 await UpdateTitle(Data.CurrentTrack);
             Data.CurrentTrackChanged += CurrentTrackChanged;
+            AudioElement.OnEnded += OnEnded;
             await base.OnInitializedAsync();
         }
 
@@ -67,16 +84,63 @@ namespace Blazor.Song.Net.Client.Shared
                 Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.ToList().IndexOf(Data.CurrentTrack) - 1) % PlaylistTracks.Count];
         }
 
+        private async Task ChangeTrack()
+        {
+            this.StateHasChanged();
+            if (Data.CurrentTrack == null)
+            {
+                return;
+            }
+            if (IsPlaying)
+            {
+                if (Data.CurrentTrack.Path.StartsWith("http"))
+                {
+                    AudioService.Play(Data.CurrentTrack.Path);
+                }
+                else
+                {
+                    AudioService.Play($"{NavigationManager.BaseUri}/{Data.CurrentTrack.Path}");
+                }
+            }
+        }
+
         private async Task CurrentTrackChanged(TrackInfo info)
         {
+            await ChangeTrack();
             await UpdateTitle(info);
+        }
+
+        private void ModifyPlayPause(bool isPlaying)
+        {
+            if (isPlaying)
+            {
+                if (Data.CurrentTrack.Path.StartsWith("http"))
+                {
+                    AudioService.Play(Data.CurrentTrack.Path);
+                }
+                else
+                {
+                    AudioService.Play($"{NavigationManager.BaseUri}/{Data.CurrentTrack.Path}");
+                }
+            }
+            else
+            {
+                AudioService.Pause();
+            }
+        }
+
+        private void OnEnded()
+        {
+            if (PlaylistTracks.Count <= 1)
+                return;
+            Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.IndexOf(Data.CurrentTrack) + 1) % PlaylistTracks.Count];
         }
 
         private void RefreshTimeStatus()
         {
-            if (playerAudio != null && Data.CurrentTrack != null && Data.CurrentTrack.Duration.TotalSeconds != 0)
+            if (Data.CurrentTrack != null && Data.CurrentTrack.Duration.TotalSeconds != 0)
             {
-                playerAudio.GetCurrentTime().ContinueWith((res) =>
+                AudioService.GetCurrentTime().ContinueWith((res) =>
                 {
                     TimeStatus = (int)(100 * res.Result / Data.CurrentTrack.Duration.TotalSeconds);
                     playerInfo.Refresh(TimeStatus);
@@ -88,9 +152,9 @@ namespace Blazor.Song.Net.Client.Shared
         private async Task UpdateTitle(TrackInfo info)
         {
             if (info != null)
-                await Document.UpdateTitle($"{info.Title}, {info.Artist} - Blazor Song.Net");
+                await Document.UpdateTitle($"{info.Title}, {info.Artist} - song.net");
             else
-                await Document.UpdateTitle("Blazor Song.Net");
+                await Document.UpdateTitle("song.net");
         }
     }
 }
