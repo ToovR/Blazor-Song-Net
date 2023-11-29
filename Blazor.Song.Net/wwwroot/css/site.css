@@ -91,3 +91,46 @@ input[type=range][orient=vertical] {
         transform: rotate(360deg)
     }
 }
+
+.libraryItemClicked {
+    animation-duration: 1s;
+    animation-name: backForth;
+}
+
+.libraryItemClicked2 {
+    animation-duration: 1s;
+    animation-name: backForth2;
+}
+
+#playlistButton {
+}
+
+@keyframes backForth {
+    0% {
+    }
+
+    50% {
+        transform: translateX(-50px) translateY(0);
+    }
+
+    to {
+    }
+}
+
+@keyframes backForth2 {
+    0% {
+    }
+
+    50% {
+        transform: translateX(-50px) translateY(0);
+    }
+
+    to {
+    }
+}
+
+.libButton {
+    width:40px;
+    margin:0 5px;
+    vertical-align:middle;
+}

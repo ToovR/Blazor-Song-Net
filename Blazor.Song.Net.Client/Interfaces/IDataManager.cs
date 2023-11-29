@@ -1,7 +1,4 @@
 ﻿using Blazor.Song.Net.Shared;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Interfaces
 {
@@ -28,7 +25,13 @@ namespace Blazor.Song.Net.Client.Interfaces
 
         Task<List<TrackInfo>> GetTracks(string idList);
 
+        void InitializeTimeRefresh();
+
         Task<bool> LoadLibrary();
+
+        Task<string> LoadPlaylist();
+
+        Task SavePlaylist(string idList);
 
         Task SubscribeToPodcast(PodcastChannel channel);
     }

@@ -7,9 +7,8 @@ namespace Blazor.Song.Net.Client
     {
         public static IServiceCollection AddClientServices(this IServiceCollection services)
         {
-            services.AddScoped<IDataManager, DataManager>();
-            services.AddScoped<IAudioService, AudioService>();
-            services.AddScoped<IJsWrapperService, JsWrapperService>();
+            services.AddScoped<IDataManager, ClientDataManager>();
+            services.AddScoped<IAudioService, ClientAudioService>();
 
             return services;
         }

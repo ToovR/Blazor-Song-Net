@@ -1,18 +1,9 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
-using Microsoft.AspNetCore.Components;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace Blazor.Song.Net.Services
 {
-    public class DataManager : IDataManager
+    public class ServerDataManager : IDataManager
     {
         private readonly ILibraryStore _libraryStore;
 
@@ -20,7 +11,7 @@ namespace Blazor.Song.Net.Services
 
         private TrackInfo _currentTrack;
 
-        public DataManager(ILibraryStore libraryStore, IPodcastStore podcastStore)
+        public ServerDataManager(ILibraryStore libraryStore, IPodcastStore podcastStore)
         {
             _libraryStore = libraryStore;
             _podcastStore = podcastStore;
@@ -113,6 +104,10 @@ namespace Blazor.Song.Net.Services
             }
         }
 
+        public void InitializeTimeRefresh()
+        {
+        }
+
         public async Task<bool> LoadLibrary()
         {
             try
@@ -123,6 +118,16 @@ namespace Blazor.Song.Net.Services
             {
                 return false;
             }
+        }
+
+        public async Task<string> LoadPlaylist()
+        {
+            return await _libraryStore.LoadPlaylist();
+        }
+
+        public async Task SavePlaylist(string idList)
+        {
+            await _libraryStore.SavePlaylist(idList);
         }
 
         public async Task SubscribeToPodcast(PodcastChannel podcastChannel)

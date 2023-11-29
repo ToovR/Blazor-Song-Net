@@ -11,18 +11,30 @@ namespace Blazor.Song.Net.Controllers
     [Route("api/[controller]")]
     public class LibraryController : ControllerBase
     {
+        private readonly ILibraryStore _libraryStore;
+
         public LibraryController(ILibraryStore libraryStore)
         {
             _libraryStore = libraryStore;
         }
 
-        private readonly ILibraryStore _libraryStore;
-
         [HttpGet("[action]")]
         public async Task<ActionResult> Download(string path)
         {
-            byte[] file = await _libraryStore.Download(path);  
+            byte[] file = await _libraryStore.Download(path);
             return File(file, "audio/mpeg");
+        }
+
+        [HttpGet("Playlist")]
+        public async Task<string?> GetPlaylist()
+        {
+            return await _libraryStore.LoadPlaylist();
+        }
+
+        [HttpPost("Playlist")]
+        public async Task PostPlaylist([FromBody] string idList)
+        {
+            await _libraryStore.SavePlaylist(idList);
         }
 
         [HttpGet("[action]")]

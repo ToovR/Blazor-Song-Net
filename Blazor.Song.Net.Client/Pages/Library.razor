@@ -23,8 +23,8 @@
     {
         <SongList Tracks="@TrackListFiltered" CurrentTrack="@CurrentTrack">
             <RowTemplate>
-                <tr @ondblclick="( e => DoubleclickPlaylistRow(context))" class="libraryRow">
-                    <td>@context.Title</td>
+                <tr class="libraryRow @((context.ClickMarker.HasValue ?( context.ClickMarker.Value ? "libraryItemClicked": "libraryItemClicked2"):""))">
+                    <td><button class="button is-info libButton" @onclick="( e => AddPlaylistClick(context))"><i class="fa fa-plus"></i></button>@context.Title</td>
                     <td>@context.Artist</td>
                     <td>@context.Duration.ToString("mm\\:ss")</td>
                 </tr>

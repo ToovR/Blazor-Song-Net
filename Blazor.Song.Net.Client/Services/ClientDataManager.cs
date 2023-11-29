@@ -1,24 +1,17 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
-using Microsoft.AspNetCore.Components;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace Blazor.Song.Net.Client.Services
 {
-    public class DataManager : IDataManager
+    public class ClientDataManager : IDataManager
     {
         private readonly HttpClient _client;
 
         private TrackInfo _currentTrack;
 
-        public DataManager(HttpClient client)
+        public ClientDataManager(HttpClient client)
         {
             _client = client;
         }
@@ -88,9 +81,24 @@ namespace Blazor.Song.Net.Client.Services
             return (await _client.GetFromJsonAsync<TrackInfo[]>($"api/Track/Tracks?ids={idList ?? ""}")).ToList();
         }
 
+        public void InitializeTimeRefresh()
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<bool> LoadLibrary()
         {
             return await _client.GetFromJsonAsync<bool>($"api/Track/LoadLibrary");
+        }
+
+        public async Task<string> LoadPlaylist()
+        {
+            return await _client.GetStringAsync($"api/Library/Playlist");
+        }
+
+        public async Task SavePlaylist(string idList)
+        {
+            await _client.PostAsJsonAsync($"api/Library/Playlist", idList);
         }
 
         public async Task SubscribeToPodcast(PodcastChannel podcastChannel)

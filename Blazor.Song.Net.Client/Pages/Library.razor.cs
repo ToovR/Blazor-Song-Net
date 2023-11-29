@@ -29,19 +29,28 @@ namespace Blazor.Song.Net.Client.Pages
             }
         }
 
+        public bool IsLibraryLoaded { get; private set; }
+
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
         public List<TrackInfo> TrackListFiltered { get; set; }
-        public bool IsLibraryLoaded { get; private set; }
+
         [Inject]
         private IDataManager Data { get; set; }
 
-        public void DoubleclickPlaylistRow(TrackInfo track)
+        public void AddPlaylistClick(TrackInfo track)
         {
             if (PlaylistTracks.Any(t => t.Id == track.Id))
+            {
                 return;
+            }
             PlaylistTracks.Add(track);
+            if (track.ClickMarker == null)
+            {
+                track.ClickMarker = true;
+            }
+            track.ClickMarker = !track.ClickMarker;
         }
 
         public async Task SearchKeyUp(KeyboardEventArgs e)
@@ -91,7 +100,6 @@ namespace Blazor.Song.Net.Client.Pages
 
         private async Task UpdateLibrary(string filter)
         {
-
             TrackListFiltered = await Data.GetSongs(filter);
         }
     }

@@ -16,8 +16,6 @@ namespace Blazor.Song.Net.Client.Shared
 
         public Document Document { get; private set; }
 
-        public Functions Functions { get; private set; }
-
         [Inject]
         public IJSRuntime JsRuntime { get; private set; }
 
@@ -65,12 +63,11 @@ namespace Blazor.Song.Net.Client.Shared
         protected override async Task OnInitializedAsync()
         {
             Document = new Document(JsRuntime);
-            Functions = new Functions(JsRuntime);
-            Functions.SetTimeout(RefreshTimeStatus, 900);
+            AudioService.SetTimeout(RefreshTimeStatus, 900);
             if (Data.CurrentTrack != null)
                 await UpdateTitle(Data.CurrentTrack);
             Data.CurrentTrackChanged += CurrentTrackChanged;
-            AudioElement.OnEnded += OnEnded;
+            await AudioService.SetOnEnded(OnEnded);
             await base.OnInitializedAsync();
         }
 
@@ -146,7 +143,8 @@ namespace Blazor.Song.Net.Client.Shared
                     playerInfo.Refresh(TimeStatus);
                 });
             }
-            Functions.SetTimeout(RefreshTimeStatus, 900);
+
+            AudioService.SetTimeout(RefreshTimeStatus, 900);
         }
 
         private async Task UpdateTitle(TrackInfo info)

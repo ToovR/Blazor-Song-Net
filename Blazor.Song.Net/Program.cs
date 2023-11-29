@@ -1,8 +1,6 @@
 using Blazor.Song.Net;
-using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Client.Pages;
 using Blazor.Song.Net.Components;
-using Blazor.Song.Net.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +13,6 @@ builder.Services.AddRazorComponents()
 
 bool isAzure = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") != null;
 builder.Services.AddServerServices(isAzure);
-builder.Services.AddScoped<IDataManager, DataManager>();
-builder.Services.AddScoped<IJsWrapperService, JsWrapperService>();
-builder.Services.AddScoped<IAudioService, AudioService>();
 
 var app = builder.Build();
 

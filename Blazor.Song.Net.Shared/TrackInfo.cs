@@ -8,7 +8,10 @@ namespace Blazor.Song.Net.Shared
         public string Album { get; set; }
         public string Artist { get; set; }
 
+        public bool? ClickMarker { get; set; }
         public int? CollectionId { get; set; }
+
+        public string DownloadPath { get; set; }
 
         [JsonIgnore]
         public TimeSpan Duration { get; set; }
@@ -26,6 +29,5 @@ namespace Blazor.Song.Net.Shared
 
         public object SourceObject { get; set; }
         public string Title { get; set; }
-        public string DownloadPath { get; set; }
     }
 }

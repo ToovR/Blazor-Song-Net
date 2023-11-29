@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -23,6 +22,7 @@ namespace Blazor.Song.Indexer
         private const string _episodeListFile = "downloadedEpisodes.json";
         private const string _libraryFile = "tracks.json";
         private const string _musicsharename = "music";
+        private const string _playlistFile = "playlist.txt";
         private const string _podcastsharename = "podcast";
         private const int BLOCK_SIZE = 16 * 1024;
         private readonly string _blobConnectionstring;
@@ -144,6 +144,16 @@ namespace Blazor.Song.Indexer
             return file.Exists();
         }
 
+        public async Task<string> LoadPlaylist()
+        {
+            return await GetFileContentAsync(_musicsharename, _directoryRoot, _playlistFile);
+        }
+
+        public async Task SavePlaylist(string idList)
+        {
+            await UploadFileAsync(_podcastsharename, _directoryRoot, _playlistFile, idList);
+        }
+
         public void UpdateChannelFile(string fileContent)
         {
             UploadFile(_podcastsharename, _directoryRoot, _channelListFile, fileContent);
@@ -185,6 +195,36 @@ namespace Blazor.Song.Indexer
 
                     HttpRange httpRange = new(offset, buffer.Length);
                     Response<ShareFileUploadInfo> resp = file.UploadRange(httpRange, uploadChunk);
+                    offset += buffer.Length;
+                }
+            }
+        }
+
+        private static async Task UploadStreamToFileAsync(Stream stream, ShareFileClient file)
+        {
+            stream.Position = 0;
+
+            if (await file.ExistsAsync())
+            {
+                await file.DeleteAsync();
+            }
+            await file.CreateAsync(stream.Length);
+
+            using (BinaryReader reader = new BinaryReader(stream))
+            {
+                int offset = 0;
+                while (true)
+                {
+                    byte[] buffer = reader.ReadBytes(16 * 1024);
+                    if (buffer.Length == 0)
+                        break;
+
+                    MemoryStream uploadChunk = new();
+                    await uploadChunk.WriteAsync(buffer, 0, buffer.Length);
+                    uploadChunk.Position = 0;
+
+                    HttpRange httpRange = new(offset, buffer.Length);
+                    await file.UploadRangeAsync(httpRange, uploadChunk);
                     offset += buffer.Length;
                 }
             }
@@ -314,6 +354,21 @@ namespace Blazor.Song.Indexer
                 writer.Flush();
 
                 UploadStreamToFile(stream, file);
+            }
+        }
+
+        private async Task UploadFileAsync(string sharename, string directoryName, string fileName, string content)
+        {
+            ShareClient share = GetShare(sharename);
+            ShareDirectoryClient directory = share.GetDirectoryClient(directoryName);
+            ShareFileClient file = directory.GetFileClient(fileName);
+            using (MemoryStream stream = new MemoryStream())
+            {
+                StreamWriter writer = new StreamWriter(stream);
+                await writer.WriteAsync(content);
+                await writer.FlushAsync();
+
+                await UploadStreamToFileAsync(stream, file);
             }
         }
     }

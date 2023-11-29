@@ -14,10 +14,14 @@
 
         public void Play(string path);
 
-        public void SetBass(int value);
+        public Task SetBass(int value);
+
+        public Task SetOnEnded(Action onEnded);
 
         public Task SetTime(double newTime, double total);
 
-        public void SetTreble(int value);
+        void SetTimeout(Action refreshTimeStatus, int v);
+
+        public Task SetTreble(int value);
     }
 }

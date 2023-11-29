@@ -1,11 +1,7 @@
 ﻿using Blazor.Song.Indexer;
 using Blazor.Song.Net.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Services
 {
@@ -27,7 +23,7 @@ namespace Blazor.Song.Net.Services
 
         public IEnumerable<TrackInfo> GetTracks(IEnumerable<long> ids)
         {
-            if (! _trackParser.IsLibraryFileExists())
+            if (!_trackParser.IsLibraryFileExists())
             {
                 return Enumerable.Empty<TrackInfo>();
             }
@@ -116,6 +112,16 @@ namespace Blazor.Song.Net.Services
                 _allTracks = JsonSerializer.Deserialize<TrackInfo[]>(trackContent);
             }
             return _allTracks.Count() > 0;
+        }
+
+        public async Task<string> LoadPlaylist()
+        {
+            return await _trackParser.LoadPlaylist();
+        }
+
+        public async Task SavePlaylist(string idList)
+        {
+            await _trackParser.SavePlaylist(idList);
         }
     }
 }

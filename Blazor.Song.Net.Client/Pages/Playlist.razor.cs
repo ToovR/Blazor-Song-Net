@@ -2,11 +2,7 @@ using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Client.Shared;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using System;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Pages
 {
@@ -17,9 +13,6 @@ namespace Blazor.Song.Net.Client.Pages
 
         [Inject]
         protected IDataManager Data { get; set; }
-
-        [Inject]
-        protected IJsWrapperService JsWrapperService { get; set; }
 
         public void RemovePlaylistTrack(Int64 trackInfoId)
         {
@@ -40,6 +33,10 @@ namespace Blazor.Song.Net.Client.Pages
             if (PlaylistTracks == null)
             {
                 PlaylistTracks = new ObservableList<TrackInfo>();
+            }
+            else
+            {
+                PlaylistTracks.CollectionChanged -= PlaylistChanged;
             }
             await LoadPlaylist();
             Data.CurrentTrackChanged += CurrentTrackChanged;
@@ -88,12 +85,11 @@ namespace Blazor.Song.Net.Client.Pages
 
         private async Task LoadPlaylist()
         {
-            Wrap.Cookie playlistCookie = JsWrapperService.GetSavedPlaylist();
-            if (playlistCookie == null)
+            string sidList = await Data.LoadPlaylist();
+            if (sidList == null)
             {
                 return;
             }
-            string sidList = await playlistCookie.Get();
             if (sidList != null)
                 (await Data.GetTracks(sidList)).ForEach(t =>
                 {
@@ -104,16 +100,19 @@ namespace Blazor.Song.Net.Client.Pages
                 this.StateHasChanged();
         }
 
-        private async void PlaylistChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void PlaylistChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            await SavePlaylist();
-            this.StateHasChanged();
+            Task.Run(async () =>
+            {
+                await SavePlaylist();
+                this.StateHasChanged();
+            });
         }
 
         private async Task SavePlaylist()
         {
             string idList = string.Join("|", PlaylistTracks.Select(p => p.Id));
-            await JsWrapperService.SavePlaylist(idList);
+            await Data.SavePlaylist(idList);
         }
     }
 }

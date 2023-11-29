@@ -1,7 +1,6 @@
 ﻿using Blazor.Song.Indexer;
-using Blazor.Song.Net.Client.Services;
+using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Services;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazor.Song.Net
 {
@@ -21,6 +20,8 @@ namespace Blazor.Song.Net
             services.AddScoped<IFileHelper, FileHelper>();
             services.AddScoped<IPodcastStore, PodcastStore>();
             services.AddScoped<ILibraryStore, LibraryStore>();
+            services.AddScoped<IDataManager, ServerDataManager>();
+            services.AddScoped<IAudioService, ServerAudioService>();
 
             return services;
         }
