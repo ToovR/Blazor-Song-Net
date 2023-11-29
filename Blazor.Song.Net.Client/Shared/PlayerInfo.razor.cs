@@ -1,5 +1,4 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
-using Blazor.Song.Net.Client.Services;
 using Blazor.Song.Net.Client.Wrap;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
@@ -16,7 +15,7 @@ namespace Blazor.Song.Net.Client.Shared
         [Inject]
         public IJSRuntime JsRuntime { get; set; }
 
-        public int TimeStatus { get; set; }
+        public double TimeStatus { get; set; }
 
         public string TrackFullTitle
         {
@@ -37,7 +36,7 @@ namespace Blazor.Song.Net.Client.Shared
             get { return Data.CurrentTrack; }
         }
 
-        public void Refresh(int timeStatus)
+        public void Refresh(double timeStatus)
         {
             TimeStatus = timeStatus;
             this.StateHasChanged();

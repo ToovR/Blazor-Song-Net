@@ -1,10 +1,10 @@
 ﻿@using Blazor.Song.Net.Shared
 
-<div name="player" class="content">
+<div name="player" class="content" style="margin-bottom:0">
     <div name="playerInfoPanel" class="frame">
         <PlayerInfo @ref=playerInfo />
     </div>
-    <div class="columns is-mobile" name="playerControlPanel">
+    <div class="columns is-mobile" name="playerControlPanel" style="margin-bottom:0">
         <button class="column button is-info" @onclick=PreviousTrackClick><i class="fa fa-fast-backward"></i></button>
         <button class="column button is-info" @onclick="(async () => { await AudioService.AddTime(-5, Data.CurrentTrack.Duration.TotalSeconds); })"><i class="fa fa-backward"></i></button>
         <button class="column button is-info" @onclick="(async () => { IsPlaying = !IsPlaying; })">

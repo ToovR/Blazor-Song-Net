@@ -1,91 +1,193 @@
 ﻿// Audio element
 
-window.audioElement = () => { };
+window.audio = {
+    _bassFilter: null,
+    _serviceRef: null,
+    _sound: null,
+    _trebleFilter: null,
 
-var _bassFilter;
-var _serviceRef;
-var _sound;
-var _trebleFilter;
-
-initHowler = () => {
-    if (_bassFilter != undefined) {
-        return;
-    }
-    _bassFilter = Howler.ctx.createBiquadFilter();
-    _bassFilter.type = "lowshelf";
-    _bassFilter.frequency.value = 200;
-    _bassFilter.gain.value = 0;
-
-    _trebleFilter = Howler.ctx.createBiquadFilter();
-    _trebleFilter.type = "highshelf";
-    _trebleFilter.frequency.value = 2000;
-    _trebleFilter.gain.value = 0;
-
-    _bassFilter.connect(_trebleFilter);
-}
-
-window.audioElement.get_bass = () => {
-    if (_bassFilter == undefined) {
-        return 0;
-    }
-    return _bassFilter.gain.value;
-}
-
-window.audioElement.get_currentTime = () => {
-    return _sound.seek();
-};
-
-window.audioElement.get_treble = () => {
-    if (_trebleFilter == undefined) {
-        return 0;
-    }
-    return _trebleFilter.gain.value;
-}
-
-window.audioElement.play = (trackPath) => {
-    if (_sound == undefined || trackPath != _sound._src) {
-        if (_sound != undefined) {
-            _sound.pause();
-            _sound.unload();
-        }
-        _sound = new Howl({
+    initHowler: function (trackPath) {
+        var self = this;
+        var newSound = new Howl({
             src: [trackPath],
             onend: function () {
-                _serviceRef.invokeMethodAsync('AudioEnded');
+                self._serviceRef.invokeMethodAsync('AudioEnded');
+                //self.onended();
             }
         });
 
-        initHowler();
+        if (this._bassFilter == undefined) {
+            this._bassFilter = Howler.ctx.createBiquadFilter();
+            this._bassFilter.type = "lowshelf";
+            this._bassFilter.frequency.value = 200;
+            this._bassFilter.gain.value = 0;
 
-        const gainNode = _sound._sounds[0]._node;
+            this._trebleFilter = Howler.ctx.createBiquadFilter();
+            this._trebleFilter.type = "highshelf";
+            this._trebleFilter.frequency.value = 2000;
+            this._trebleFilter.gain.value = 0;
+
+            this._bassFilter.connect(this._trebleFilter);
+        }
+
+        //setTimeout(function () { self.spyEndOfSong(self); }, 1000);
+
+        const gainNode = newSound._sounds[0]._node;
         gainNode.disconnect(Howler.masterGain);
-        gainNode.connect(_bassFilter);
-        _bassFilter.connect(_trebleFilter);
-        _trebleFilter.connect(Howler.masterGain);
+        gainNode.connect(this._bassFilter);
+        this._bassFilter.connect(this._trebleFilter);
+        this._trebleFilter.connect(Howler.masterGain);
+        this.updateCanvas();
+        return newSound;
+    },
+    _canvasUpdateMark: 0,
+    updateCanvas: function () {
+        this._canvasUpdateMark++;
+        const canvas = document.getElementById("equalizer");
+        const canvasCtx = canvas.getContext("2d");
+        const parentDiv = document.body; // document.getElementById("equalizerDiv");
+
+        _self = this;
+
+        var WIDTH = parentDiv.offsetWidth;
+        var HEIGHT = parentDiv.offsetHeight;
+        canvas.width = parentDiv.offsetWidth;
+        canvas.height = parentDiv.offsetHeight;
+
+        const audioCtx = Howler.ctx;
+
+        var analyser = Howler.ctx.createAnalyser();
+        Howler.masterGain.connect(analyser);
+        analyser.connect(Howler.ctx.destination);
+
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        //new ResizeObserver(() => {
+        //    _self._canvasUpdateMark++;
+        //    analyser.fftSize = 256;
+        //    const bufferLength = analyser.frequencyBinCount;
+        //    const dataArray = new Uint8Array(bufferLength);
+        //    function idraw() {
+        //        if (_self._canvasUpdateMark != currentMark) {
+        //            return;
+        //        }
+        //        drawVisual = requestAnimationFrame(idraw);
+
+        //        analyser.getByteFrequencyData(dataArray);
+
+        //        canvasCtx.fillStyle = "rgb(0, 0, 0)";
+        //        canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+        //        const barWidth = (WIDTH / bufferLength) * 2.5;
+        //        let barHeight;
+        //        let x = 0;
+        //        for (let i = 0; i < bufferLength; i++) {
+        //            barHeight = dataArray[i] / 1.5;
+
+        //            //canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+        //            canvasCtx.fillStyle = `rgb(${barHeight + 33}, ${barHeight + 140}, ${barHeight + 124})`;
+        //            canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight);
+
+        //            x += barWidth + 1;
+        //        }
+        //    }
+        //    idraw();
+        //    //    analyser.disconnect(Howler.ctx.destination);
+        //    //    Howler.masterGain.connect(Howler.ctx.destination);
+        //    //    _self.updateCanvas();
+        //}).observe(parentDiv);
+
+        var currentMark = this._canvasUpdateMark;
+        function draw() {
+            if (_self._canvasUpdateMark != currentMark) {
+                return;
+            }
+            drawVisual = requestAnimationFrame(draw);
+
+            analyser.getByteFrequencyData(dataArray);
+
+            canvasCtx.fillStyle = "rgb(0, 0, 0)";
+            canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+            const barWidth = (WIDTH / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i] * 6; // / 1.5;
+
+                //canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+                canvasCtx.fillStyle = `rgb(${barHeight / 10 + 33}, ${barHeight / 10 + 140}, ${barHeight / 10 + 124})`;
+                canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight);
+
+                x += barWidth + 1;
+            }
+        }
+
+        draw();
+    },
+
+    get_bass: function () {
+        if (this._bassFilter == undefined) {
+            return 0;
+        }
+        return this._bassFilter.gain.value;
+    },
+
+    get_currentTime: function () {
+        if (this._sound == null) {
+            return 0;
+        }
+        return this._sound.seek();
+    },
+
+    get_treble: function () {
+        if (this._trebleFilter == undefined) {
+            return 0;
+        }
+        return this._trebleFilter.gain.value;
+    },
+
+    play: function (trackPath) {
+        if (this._sound == undefined || trackPath != this._sound._src) {
+            if (this._sound != undefined) {
+                this._sound.pause();
+                this._sound.unload();
+            }
+            this._sound = this.initHowler(trackPath);
+        }
+        this._sound.play();
+    },
+
+    pause: function () {
+        this._sound.pause();
+    },
+
+    set_bass: function (value) {
+        this._bassFilter.gain.value = value;
+    },
+
+    set_serviceRef: function (serviceRef) {
+        this._serviceRef = serviceRef;
+    },
+
+    set_currentTime: function (value) {
+        if (this._sound.playing()) {
+            this._sound.seek(value);
+        }
+    },
+
+    set_treble: function (value) {
+        this._trebleFilter.gain.value = value;
+    },
+
+    setProgressTimeout: function (time) {
+        _self = this;
+        setTimeout(function () {
+            _self._serviceRef.invokeMethodAsync('TimeoutExecuteFunc');
+        }, time);
     }
-    _sound.play();
-};
-
-window.audioElement.pause = () => {
-    _sound.pause();
-};
-
-window.audioElement.set_bass = (value) => {
-    _bassFilter.gain.value = value;
-}
-
-window.audioElement.set_serviceRef = (serviceRef) => {
-    _serviceRef = serviceRef;
-}
-
-window.audioElement.set_currentTime = (value) => {
-    if (_sound.playing()) {
-        _sound.seek(value);
-    }
-};
-
-window.audioElement.set_treble = (value) => {
-    _trebleFilter.gain.value = value;
 }
 
 window.classElement = () => { };
@@ -115,12 +217,4 @@ window.element = () => { };
 
 window.element.get_offsetWidth = (id) => {
     return document.getElementById(id).offsetWidth;
-};
-
-window.functions = () => { };
-
-window.functions.setTimeout = (time) => {
-    setTimeout(function () {
-        _serviceRef.invokeMethodAsync('TimeoutExecuteFunc');
-    }, time);
 };

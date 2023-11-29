@@ -41,7 +41,7 @@ namespace Blazor.Song.Net.Client.Shared
         [CascadingParameter]
         private ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
-        private int TimeStatus { get; set; }
+        private double TimeStatus { get; set; }
 
         public void SetCurrentTrackNext()
         {
@@ -139,8 +139,15 @@ namespace Blazor.Song.Net.Client.Shared
             {
                 AudioService.GetCurrentTime().ContinueWith((res) =>
                 {
-                    TimeStatus = (int)(100 * res.Result / Data.CurrentTrack.Duration.TotalSeconds);
-                    playerInfo.Refresh(TimeStatus);
+                    try
+                    {
+                        TimeStatus = (100 * res.Result / Data.CurrentTrack.Duration.TotalSeconds);
+                        playerInfo.Refresh(TimeStatus);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
                 });
             }
 

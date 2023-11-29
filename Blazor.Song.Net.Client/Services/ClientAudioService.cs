@@ -1,5 +1,4 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
-using Blazor.Song.Net.Client.Wrap;
 using Microsoft.JSInterop;
 
 namespace Blazor.Song.Net.Client.Services
@@ -31,39 +30,39 @@ namespace Blazor.Song.Net.Client.Services
 
         public async Task<int> GetBass()
         {
-            return await _jsRuntime.InvokeAsync<int>("audioElement.get_bass");
+            return await _jsRuntime.InvokeAsync<int>("audio.get_bass");
         }
 
         public async Task<double> GetCurrentTime()
         {
-            double currentTime = await _jsRuntime.InvokeAsync<double>("audioElement.get_currentTime");
+            double currentTime = await _jsRuntime.InvokeAsync<double>("audio.get_currentTime");
             return currentTime;
         }
 
         public async Task<int> GetTreble()
         {
-            return await _jsRuntime.InvokeAsync<int>("audioElement.get_treble");
+            return await _jsRuntime.InvokeAsync<int>("audio.get_treble");
         }
 
         public void Pause()
         {
-            _jsRuntime.InvokeAsync<bool>("audioElement.pause");
+            _jsRuntime.InvokeAsync<bool>("audio.pause");
         }
 
         public void Play(string path)
         {
-            _jsRuntime.InvokeAsync<bool>("audioElement.play", path);
+            _jsRuntime.InvokeAsync<bool>("audio.play", path);
         }
 
         public async Task SetBass(int value)
         {
-            await _jsRuntime.InvokeAsync<bool>("audioElement.set_bass", value);
+            await _jsRuntime.InvokeAsync<bool>("audio.set_bass", value);
         }
 
         public async Task SetOnEnded(Action onEnded)
         {
             DotNetObjectReference<ClientAudioService>? audioRef = DotNetObjectReference.Create(this);
-            await _jsRuntime.InvokeVoidAsync("audioElement.set_serviceRef", audioRef);
+            await _jsRuntime.InvokeVoidAsync("audio.set_serviceRef", audioRef);
             OnEnded += onEnded;
         }
 
@@ -73,18 +72,18 @@ namespace Blazor.Song.Net.Client.Services
                 newTime = 0;
             if (newTime > total)
                 newTime = (int)total;
-            await _jsRuntime.InvokeVoidAsync("audioElement.set_currentTime", newTime);
+            await _jsRuntime.InvokeVoidAsync("audio.set_currentTime", newTime);
         }
 
         public void SetTimeout(Action refreshTimeStatus, int timeout)
         {
             _timeoutAction = refreshTimeStatus;
-            _jsRuntime.InvokeAsync<bool>("functions.setTimeout", timeout);
+            _jsRuntime.InvokeAsync<bool>("audio.setProgressTimeout", timeout);
         }
 
         public async Task SetTreble(int value)
         {
-            await _jsRuntime.InvokeAsync<bool>("audioElement.set_treble", value);
+            await _jsRuntime.InvokeAsync<bool>("audio.set_treble", value);
         }
 
         [JSInvokable]
