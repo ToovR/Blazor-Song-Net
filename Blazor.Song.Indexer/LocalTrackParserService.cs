@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Blazor.Song.Indexer
 {
-    public class LocalTrackParserService : ITrackParserService
+    public partial class LocalTrackParserService : ITrackParserService
     {
         private const string _channelListFile = "./podcasts/channelList.json";
         private const string _episodeListFile = "./podcasts/downloadedEpisodes.json";
@@ -17,8 +17,9 @@ namespace Blazor.Song.Indexer
         private const string _podcastFolder = "./podcast/";
         private static readonly string _musicDirectoryRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
 
-        private static object _locker = new object();
+        private static object _locker = new();
         private readonly string _directoryMusicRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+        private readonly Regex _musicFileRegex = MusicFileRegex();
         private string _libraryFile = "./tracks.json";
         private string _playlistFile = "./playlist.txt";
 
@@ -43,7 +44,7 @@ namespace Blazor.Song.Indexer
             }
             if (!Directory.Exists(feedDirectory))
                 Directory.CreateDirectory(feedDirectory);
-            using var client = new WebClient();
+            using WebClient client = new();
             string path = Path.Combine(feedDirectory, $"{id}_{urlFileName}");
             await client.DownloadFileTaskAsync(link, path);
 
@@ -68,10 +69,10 @@ namespace Blazor.Song.Indexer
         public string GetTrackData()
         {
             int counter = 0;
-            Uri folderRoot = new Uri(_musicDirectoryRoot);
+            Uri folderRoot = new(_musicDirectoryRoot);
 
             var trackEnum = Directory.GetFiles(_musicDirectoryRoot, "*.*", SearchOption.AllDirectories)
-                .Where(file => Regex.IsMatch(file, ".*\\.(mp3|ogg|flac)$", RegexOptions.IgnoreCase));
+                .Where(file => _musicFileRegex.IsMatch(file));
             int numberOfTracks = trackEnum.Count();
 
             TrackInfo[] allTracks = trackEnum.AsParallel()
@@ -90,7 +91,7 @@ namespace Blazor.Song.Indexer
             {
                 folderRoot = new Uri(Directory.GetCurrentDirectory());
             }
-            FileInfo musicFileInfo = new FileInfo(musicFilePath);
+            FileInfo musicFileInfo = new(musicFilePath);
             TagLib.File tagMusicFile = TagLib.File.Create(new TagMusicFile(musicFileInfo.FullName));
 
             string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
@@ -158,14 +159,15 @@ namespace Blazor.Song.Indexer
             File.WriteAllText(_libraryFile, fileContent);
         }
 
+        [GeneratedRegex(".*\\.(mp3|ogg|flac)$", RegexOptions.IgnoreCase, "fr-FR")]
+        private static partial Regex MusicFileRegex();
+
         private async Task<byte[]> ReadFile(string path)
         {
-            using (FileStream s = new FileStream(path, FileMode.Open, FileAccess.Read))
-            {
-                byte[] buffer = new byte[s.Length];
-                await s.ReadAsync(buffer, 0, (int)s.Length);
-                return buffer;
-            }
+            using FileStream filestream = new(path, FileMode.Open, FileAccess.Read);
+            byte[] buffer = new byte[filestream.Length];
+            await filestream.ReadAsync(buffer.AsMemory(0, (int)filestream.Length));
+            return buffer;
         }
     }
 }

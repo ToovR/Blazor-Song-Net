@@ -24,6 +24,10 @@
     height: 30px;
 }
 
+#playlist .table-scroll {
+    height: 600px;
+}
+
 .playlistRow .info {
     cursor: pointer;
 }
@@ -56,7 +60,13 @@
     }
 
 #library .table-scroll {
-    height: 400px;
+    height: 500px;
+}
+
+
+
+#podcast .table-scroll {
+    height: 450px;
 }
 
 .label {
@@ -69,6 +79,7 @@ input[type=range][orient=vertical] {
     height: 175px;
     padding: 0 5px;
 }
+
 
 .spinner {
     border: 6px solid silver;
@@ -89,12 +100,12 @@ input[type=range][orient=vertical] {
     }
 }
 
-.libraryItemClicked {
+.library-item-clicked {
     animation-duration: 1s;
     animation-name: backForth;
 }
 
-.libraryItemClicked2 {
+.library-item-clicked2 {
     animation-duration: 1s;
     animation-name: backForth2;
 }
@@ -126,8 +137,21 @@ input[type=range][orient=vertical] {
     }
 }
 
-.libButton {
+.lib-button {
     width: 40px;
     margin: 0 5px;
     vertical-align: middle;
+}
+
+.light-table {
+    background: white;
+}
+
+.podcast-card {
+    margin-top: 0px;
+    max-height: 200px;
+}
+
+.songlist-table tr th {
+    min-width: 50px;
 }

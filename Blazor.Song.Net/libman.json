@@ -9,8 +9,12 @@
     {
       "provider": "jsdelivr",
       "library": "bulma@0.8.1",
-      "destination": "wwwroot/lib/bulma/",
-      "files": [ "bulma.sass", "css/bulma.css", "css/bulma.css.map", "css/bulma.min.css"]
+      "destination": "wwwroot/lib/bulma/"
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "bulma-slider@2.0.5",
+      "destination": "wwwroot/lib/bulma-slider/"
     },
     {
       "library": "howler@2.2.4",

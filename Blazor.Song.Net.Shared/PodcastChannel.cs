@@ -4,6 +4,8 @@ namespace Blazor.Song.Net.Shared
 {
     public class PodcastChannel
     {
+        public bool? ClickMarker { get; set; }
+
         public string ArtistName { get; set; }
         public string ArtworkUrl100 { get; set; }
         public string ArtworkUrl30 { get; set; }

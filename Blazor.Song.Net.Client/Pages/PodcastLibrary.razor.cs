@@ -91,10 +91,16 @@ namespace Blazor.Song.Net.Client.Pages
             }
         }
 
-        protected async Task SubscribeToPodcast(Int64 id)
+        protected async Task SubscribeToPodcast(PodcastChannel newPodcast)
         {
-            var newPodcast = ChannelsFiltered.Single(p => p.CollectionId== id);
             await Data.SubscribeToPodcast(newPodcast);
+            if (newPodcast.ClickMarker == null)
+            {
+                newPodcast.ClickMarker = true;
+            }
+            newPodcast.ClickMarker = !newPodcast.ClickMarker;
+            Filter = "";
+            await UpdatePodcastChannel(Filter);
         }
 
         private async Task UpdateLibrary(string filter)

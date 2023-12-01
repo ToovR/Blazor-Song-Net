@@ -3,10 +3,10 @@
 @using Blazor.Song.Net.Client;
 @using Blazor.Song.Net.Shared;
 
-<div id="library" name="library" class="content section">
+<div id="podcast" name="library" class="content section">
     <!-- Podcasts subscribed/Podcast search-->
-    <div name="searchPanel" class="field has-addons is-fullwidth">
-        <div id="librarySearchDiv" class="control is-fullwidth">
+    <div name="searchPanel" class="field is-fullwidth">
+        <div id="librarySearchDiv" class="control is-fullwidth" style="display:contents">
             <input class="input is-fullwidth" type="text" placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @onkeypress="SearchInputKeyPressed" />
         </div>
         <div class="control">
@@ -20,13 +20,14 @@
     </div>
     <div class="columns">
         <div class="column">
-            <div name="songList" class="table-container frame">
+            <div name="songList" class="table-container frame light-table">
                 <div class="table-scroll">
                     <table class="table is-hoverable is-fullwidth is-narrow">
                         <thead>
                             <tr>
                                 <th><span class="text">Titre</span></th>
                                 <th><span class="text">Artiste</span></th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -36,10 +37,9 @@
                                 {
                                     @if (IsNewChannels)
                                     {
-                                        <tr class="libraryRow">
-                                            <td>@channel.CollectionName</td>
+                                        <tr class="libraryRow @((channel.ClickMarker.HasValue ?( channel.ClickMarker.Value ? "library-item-clicked": "library-item-clicked2"):""))">
+                                            <td><button class="button is-info lib-button" @onclick="(e => SubscribeToPodcast(channel))"><i class="fa fa-plus"></i></button>@channel.CollectionName</td>
                                             <td>@channel.ArtistName</td>
-                                            <td><button class="column button is-info" @onclick="(e => SubscribeToPodcast(channel.CollectionId))"><i class="fa fa-plus"></i></button></td>
                                             <td style="width:30px">
                                                 @if (channel.IsLoading)
                                                 {
@@ -53,6 +53,7 @@
                                         <tr @onclick="( e => ClickChannelRow(channel))" class="libraryRow">
                                             <td>@channel.CollectionName</td>
                                             <td>@channel.ArtistName</td>
+                                            <td></td>
                                         </tr>
                                     }
                                 }
@@ -65,7 +66,7 @@
         <div class="column">
             @if (CurrentChannelSummary != null)
             {
-                <div class="card-content pCard">
+                <div class="card-content pCard table-scroll podcast-card">
                     <div class="media">
                         <div class="media-left">
                             <figure class="image is-48x48">

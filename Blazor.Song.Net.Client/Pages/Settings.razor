@@ -7,29 +7,21 @@
             <input class="input" type="text" placeholder="image url" @bind=ImageUrl />
         </div>
 
-        <div>
-            <table>
-                <tr>
-                    <td>
-                        <input type="range" min="-40" max="40" @bind=CurrentBass orient="vertical" />
-
-                    </td>
-                    <td>
-                        <input type="range" min="-40" max="40" @bind=CurrentTreble orient="vertical" />
-
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label>Basse</label>
-                    </td>
-                    <td>
-                        <label>Aigus</label>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div>
+        <div class="columns" style="width:150px">
+            <div class="column" style="display: flex;flex-flow: column wrap;text-align:center">
+                <input id="bassSlider" class="slider has-output" style="align-self:center" type="range" min="-40" max="40" @bind=CurrentBass orient="vertical" />
+                <output for="bassSlider">0</output>
+                <label>Basse</label>
+            </div>
+            <div class="column" style="display: flex;flex-flow: column wrap;text-align:center">
+                <input id="trebleSlider" class="slider has-output" style="align-self:center" type="range" min="-40" max="40" @bind=CurrentTreble orient="vertical" />
+                <output for="trebleSlider">0</output>
+                <label>Aigus</label>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    bulmaSlider.attach();
+</script>

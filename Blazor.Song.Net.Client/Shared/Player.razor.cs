@@ -139,15 +139,8 @@ namespace Blazor.Song.Net.Client.Shared
             {
                 AudioService.GetCurrentTime().ContinueWith((res) =>
                 {
-                    try
-                    {
-                        TimeStatus = (100 * res.Result / Data.CurrentTrack.Duration.TotalSeconds);
-                        playerInfo.Refresh(TimeStatus);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
-                    }
+                    TimeStatus = (100 * res.Result / Data.CurrentTrack.Duration.TotalSeconds);
+                    playerInfo.Refresh(TimeStatus);
                 });
             }
 

@@ -1,28 +1,31 @@
 ﻿ @page "/"
  @page "/playlist"
+<div id="playlist">
+    <SongList Tracks="@PlaylistTracks.ToList()" CurrentTrack=@Data.CurrentTrack>
+        <RowTemplate>
+            @{
+                string current = "";
 
-<SongList Tracks="@PlaylistTracks.ToList()" CurrentTrack=@Data.CurrentTrack>
-    <RowTemplate>
-        @{
-            string current = "";
-
-            if (context.Id == Data.CurrentTrack?.Id)
-            {
-                current = "current";
+                if (context.Id == Data.CurrentTrack?.Id)
+                {
+                    current = "current";
+                }
             }
-        }
-        <tr @ondblclick="(e => PlaylistRowDoubleClick(context.Id))" class="playlistRow @current">
-            <td class="info" @onclick="(e => PlaylistRowClick(context.Id))">@context.Title</td>
-            <td class="info">
-                <div class="columns">
-                    <NavLink href="@($"library/artist:\"%2F^{context.Artist}$%2F\"")" class="column is-narrow">
-                        <i class="fa fa-search"></i>
-                    </NavLink>
-                    <div class="column auto" @onclick="(e => PlaylistRowClick(context.Id))">@context.Artist</div>
-                </div>
-            </td>
-            <td class="info" @onclick="(e => PlaylistRowClick(context.Id))">@context.Duration.ToString("mm\\:ss")</td>
-            <td><button class="column button is-info" @onclick="(e => PlaylistRowRemoveClick(context.Id))"><i class="fa fa-times"></i></button></td>
-        </tr>
-    </RowTemplate>
-</SongList>
+            <tr @ondblclick="(e => PlaylistRowDoubleClick(context.Id))" class="playlistRow @current">
+                <td class="info" @onclick="(e => PlaylistRowClick(context.Id))">@context.Title</td>
+                <td class="info">
+                    <div class="columns">
+                        <NavLink href="@($"/library/artist:\"{context.Artist}\"")" class="column is-narrow">
+                            <i class="fa fa-search"></i>
+                        </NavLink>
+                        <div class="column auto" @onclick="(e => PlaylistRowClick(context.Id))">@context.Artist</div>
+                    </div>
+                </td>
+                <td class="info" @onclick="(e => PlaylistRowClick(context.Id))">
+                    @context.Duration.ToString("mm\\:ss")
+                    <button class="button is-info lib-button" @onclick="(e => PlaylistRowRemoveClick(context.Id))" style="right:0;float: right;"><i class="fa fa-times"></i></button>
+                </td>
+            </tr>
+        </RowTemplate>
+    </SongList>
+</div>

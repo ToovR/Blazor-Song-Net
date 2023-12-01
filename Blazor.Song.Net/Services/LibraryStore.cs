@@ -5,14 +5,16 @@ using System.Text.RegularExpressions;
 
 namespace Blazor.Song.Net.Services
 {
-    public class LibraryStore : ILibraryStore
+    public partial class LibraryStore : ILibraryStore
     {
-        private readonly Regex _filterSentenceRegex = new Regex("([^\\s]*\"[^\"]+[\"][^\\s]*)|[^\" ]?[^\" ]+[^\" ]?");
+        private readonly Regex _filterSentenceRegex = FilterSentenceRegex();
+        private readonly IServiceProvider _serviceProvider;
         private readonly ITrackParserService _trackParser;
         private TrackInfo[] _allTracks;
 
-        public LibraryStore(ITrackParserService trackParser)
+        public LibraryStore(IServiceProvider serviceProvider, ITrackParserService trackParser)
         {
+            _serviceProvider = serviceProvider;
             _trackParser = trackParser;
         }
 
@@ -123,5 +125,8 @@ namespace Blazor.Song.Net.Services
         {
             await _trackParser.SavePlaylist(idList);
         }
+
+        [GeneratedRegex("([^\\s]*\"[^\"]+[\"][^\\s]*)|[^\" ]?[^\" ]+[^\" ]?")]
+        private static partial Regex FilterSentenceRegex();
     }
 }

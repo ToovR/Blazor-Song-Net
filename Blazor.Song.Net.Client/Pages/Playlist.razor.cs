@@ -91,13 +91,16 @@ namespace Blazor.Song.Net.Client.Pages
                 return;
             }
             if (sidList != null)
+            {
+                PlaylistTracks.CollectionChanged -= PlaylistChanged;
                 (await Data.GetTracks(sidList)).ForEach(t =>
                 {
                     if (!PlaylistTracks.Any(p => p.Id == t.Id))
                         PlaylistTracks.Add(t);
                 });
-            if (PlaylistTracks.Count > 0)
-                this.StateHasChanged();
+                PlaylistTracks.CollectionChanged += PlaylistChanged;
+            }
+            this.StateHasChanged();
         }
 
         private void PlaylistChanged(object? sender, NotifyCollectionChangedEventArgs e)

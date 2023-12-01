@@ -19,8 +19,7 @@ namespace Blazor.Song.Indexer
 
         public void CloseStream(Stream stream)
         {
-            if (stream != null)
-                stream.Close();
+            stream?.Close();
         }
     }
 }
