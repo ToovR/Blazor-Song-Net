@@ -43,6 +43,11 @@ namespace Blazor.Song.Net.Services
         public string Filter { get; set; }
         public bool IsPlaying { get; set; }
 
+        public bool IsPlayingEnabled
+        {
+            get { return false; }
+        }
+
         public async Task DownloadTrack(TrackInfo trackInfo)
         {
             Console.WriteLine($" t : {trackInfo.Title}, c : {trackInfo.CollectionId}");
@@ -102,10 +107,6 @@ namespace Blazor.Song.Net.Services
             {
                 return null;
             }
-        }
-
-        public void InitializeTimeRefresh()
-        {
         }
 
         public async Task<bool> LoadLibrary()

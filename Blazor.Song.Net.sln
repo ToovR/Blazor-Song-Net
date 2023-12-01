@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29905.134
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.Song.Net", "Blazor.Song.Net\Blazor.Song.Net.csproj", "{4C715650-EDF3-4B3B-98D9-04AACAFD886D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.Song.Net", "Blazor.Song.Net\Blazor.Song.Net.csproj", "{4C715650-EDF3-4B3B-98D9-04AACAFD886D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.Song.Net.Client", "Blazor.Song.Net.Client\Blazor.Song.Net.Client.csproj", "{139791AC-D92B-4BE5-A7DE-19A2CEA70C9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.Song.Net.Client", "Blazor.Song.Net.Client\Blazor.Song.Net.Client.csproj", "{139791AC-D92B-4BE5-A7DE-19A2CEA70C9F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.Song.Net.Shared", "Blazor.Song.Net.Shared\Blazor.Song.Net.Shared.csproj", "{A92CE797-B0EE-4B21-8F8A-A1C4D2EFA271}"
 EndProject

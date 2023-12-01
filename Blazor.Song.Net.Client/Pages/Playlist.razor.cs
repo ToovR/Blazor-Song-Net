@@ -1,5 +1,5 @@
+using Blazor.Song.Net.Client.Helpers;
 using Blazor.Song.Net.Client.Interfaces;
-using Blazor.Song.Net.Client.Shared;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Specialized;
@@ -99,6 +99,10 @@ namespace Blazor.Song.Net.Client.Pages
                         PlaylistTracks.Add(t);
                 });
                 PlaylistTracks.CollectionChanged += PlaylistChanged;
+            }
+            if (PlaylistTracks.Count > 0 && Data.CurrentTrack == null)
+            {
+                Data.CurrentTrack = PlaylistTracks.First();
             }
             this.StateHasChanged();
         }

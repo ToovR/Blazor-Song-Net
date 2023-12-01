@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-namespace Blazor.Song.Net.Client.Shared
+namespace Blazor.Song.Net.Client.Components
 {
     public partial class PlayerInfo : ComponentBase
     {

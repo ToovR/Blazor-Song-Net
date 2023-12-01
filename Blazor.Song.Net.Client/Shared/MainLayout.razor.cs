@@ -1,4 +1,5 @@
-﻿using Blazor.Song.Net.Client.Interfaces;
+﻿using Blazor.Song.Net.Client.Helpers;
+using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Specialized;

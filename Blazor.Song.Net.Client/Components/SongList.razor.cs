@@ -1,8 +1,7 @@
 ﻿using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
 
-namespace Blazor.Song.Net.Client.Shared
+namespace Blazor.Song.Net.Client.Components
 {
     public partial class SongList : ComponentBase
     {

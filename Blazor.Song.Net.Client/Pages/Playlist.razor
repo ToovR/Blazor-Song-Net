@@ -21,6 +21,7 @@
                         <div class="column auto" @onclick="(e => PlaylistRowClick(context.Id))">@context.Artist</div>
                     </div>
                 </td>
+                <td class="info" @onclick="(e => PlaylistRowClick(context.Id))">@context.Album</td>
                 <td class="info" @onclick="(e => PlaylistRowClick(context.Id))">
                     @context.Duration.ToString("mm\\:ss")
                     <button class="button is-info lib-button" @onclick="(e => PlaylistRowRemoveClick(context.Id))" style="right:0;float: right;"><i class="fa fa-times"></i></button>

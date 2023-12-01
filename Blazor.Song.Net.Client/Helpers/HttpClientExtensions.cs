@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Blazor.Song.Net.Client.Shared
+namespace Blazor.Song.Net.Client.Helpers
 {
     public static class HttpClientExtensions
     {

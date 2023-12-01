@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Specialized;
 
-namespace Blazor.Song.Net.Client.Shared
+namespace Blazor.Song.Net.Client.Helpers
 {
     public static class ObservableListExtensions
     {
@@ -73,7 +69,7 @@ namespace Blazor.Song.Net.Client.Shared
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
 
         #endregion IEnumerable

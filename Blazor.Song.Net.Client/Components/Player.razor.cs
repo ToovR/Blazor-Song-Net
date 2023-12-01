@@ -1,10 +1,11 @@
-﻿using Blazor.Song.Net.Client.Interfaces;
+﻿using Blazor.Song.Net.Client.Helpers;
+using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Client.Wrap;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Blazor.Song.Net.Client.Shared
+namespace Blazor.Song.Net.Client.Components
 {
     public partial class Player : ComponentBase
     {
@@ -38,6 +39,8 @@ namespace Blazor.Song.Net.Client.Shared
             }
         }
 
+        protected bool IsPlayingEnabled { get; set; }
+
         [CascadingParameter]
         private ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
@@ -63,6 +66,7 @@ namespace Blazor.Song.Net.Client.Shared
         protected override async Task OnInitializedAsync()
         {
             Document = new Document(JsRuntime);
+            IsPlayingEnabled = (Data?.IsPlayingEnabled ?? false);
             AudioService.SetTimeout(RefreshTimeStatus, 900);
             if (Data.CurrentTrack != null)
                 await UpdateTitle(Data.CurrentTrack);
@@ -105,6 +109,8 @@ namespace Blazor.Song.Net.Client.Shared
         {
             await ChangeTrack();
             await UpdateTitle(info);
+            IsPlayingEnabled = info != null;
+            this.StateHasChanged();
         }
 
         private void ModifyPlayPause(bool isPlaying)

@@ -1,6 +1,6 @@
 ﻿using Blazor.Song.Net.Shared;
 
-namespace Blazor.Song.Net.Client.Shared
+namespace Blazor.Song.Net.Client.Helpers
 {
     public static class FeedItemExtensions
     {

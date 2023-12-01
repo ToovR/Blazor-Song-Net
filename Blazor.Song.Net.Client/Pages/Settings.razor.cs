@@ -11,6 +11,7 @@ namespace Blazor.Song.Net.Client.Pages
         private int _currentBass;
         private int _currentTreble;
         private string _imageUrl = string.Empty;
+        private int _currentBalance;
 
         public int CurrentBass
         {
@@ -25,6 +26,21 @@ namespace Blazor.Song.Net.Client.Pages
                 AudioService.SetBass(value);
             }
         }
+
+        public int CurrentBalance
+        {
+            get { return _currentBalance; }
+            set
+            {
+                if (_currentBalance == value)
+                {
+                    return;
+                }
+                _currentBalance = value;
+                AudioService.SetBalance((double)value / 50);
+            }
+        }
+
 
         public int CurrentTreble
         {
@@ -68,6 +84,7 @@ namespace Blazor.Song.Net.Client.Pages
         {
             _currentBass = await AudioService.GetBass();
             _currentTreble = await AudioService.GetTreble();
+            _currentBalance = (int)(await AudioService.GetBalance() * 50);
             await base.OnInitializedAsync();
         }
     }

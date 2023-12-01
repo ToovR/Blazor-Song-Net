@@ -1,13 +1,8 @@
+using Blazor.Song.Net.Client.Helpers;
 using Blazor.Song.Net.Client.Interfaces;
-using Blazor.Song.Net.Client.Shared;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Pages
 {

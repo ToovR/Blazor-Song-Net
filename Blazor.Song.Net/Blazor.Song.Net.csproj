@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="Components\Layout\" />
+    <Folder Include="podcasts\" />
   </ItemGroup>
 
 </Project>

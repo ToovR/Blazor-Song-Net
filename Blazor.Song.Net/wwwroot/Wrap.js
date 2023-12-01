@@ -1,11 +1,14 @@
 ﻿// Audio element
 
 window.audio = {
+    _panNode: null,
     _bassFilter: null,
     _serviceRef: null,
     _sound: null,
     _trebleFilter: null,
-
+    _volumeNodeL: null,
+    _volumeNodeR: null,
+    _canvasUpdateMark: 0,
     initHowler: function (trackPath) {
         var self = this;
         var newSound = new Howl({
@@ -26,8 +29,11 @@ window.audio = {
             this._trebleFilter.type = "highshelf";
             this._trebleFilter.frequency.value = 2000;
             this._trebleFilter.gain.value = 0;
-
             this._bassFilter.connect(this._trebleFilter);
+
+            this._panNode = Howler.ctx.createStereoPanner();
+            this._panNode.pan.value = 0;
+            this._trebleFilter.connect(this._panNode);
         }
 
         //setTimeout(function () { self.spyEndOfSong(self); }, 1000);
@@ -36,11 +42,38 @@ window.audio = {
         gainNode.disconnect(Howler.masterGain);
         gainNode.connect(this._bassFilter);
         this._bassFilter.connect(this._trebleFilter);
-        this._trebleFilter.connect(Howler.masterGain);
+        this._trebleFilter.connect(this._panNode);
+        this._panNode.connect(Howler.masterGain);
+        //this.addBalance(Howler.ctx, this._trebleFilter, Howler.masterGain);
+
+        // default pan set to 0 - center
+
+        // PRES equalizer
         this.updateCanvas();
         return newSound;
     },
-    _canvasUpdateMark: 0,
+    //addBalance: function (audioContext, source, destination) {
+    //    this._volumeNodeL = new GainNode(audioContext);
+    //    this._volumeNodeR = new GainNode(audioContext);
+
+    //    this._volumeNodeL.gain.value = 2;
+    //    this._volumeNodeR.gain.value = 2;
+
+    //    const channelsCount = 2; // or read from: 'audioSource.channelCount'
+
+    //    const splitterNode = new ChannelSplitterNode(audioContext, { numberOfOutputs: channelsCount });
+    //    const mergerNode = new ChannelMergerNode(audioContext, { numberOfInputs: channelsCount });
+
+    //    source.connect(splitterNode);
+
+    //    splitterNode.connect(this._volumeNodeL, 0); // connect OUTPUT channel 0
+    //    splitterNode.connect(this._volumeNodeR, 1); // connect OUTPUT channel 1
+
+    //    _volumeNodeL.connect(mergerNode, 0, 0); // connect INPUT channel 0
+    //    volumeNodeR.connect(mergerNode, 0, 1); // connect INPUT channel 1
+
+    //    mergerNode.connect(destination);
+    //},
     updateCanvas: function () {
         this._canvasUpdateMark++;
         const canvas = document.getElementById("equalizer");
@@ -66,38 +99,7 @@ window.audio = {
 
         canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
-        //new ResizeObserver(() => {
-        //    _self._canvasUpdateMark++;
-        //    analyser.fftSize = 256;
-        //    const bufferLength = analyser.frequencyBinCount;
-        //    const dataArray = new Uint8Array(bufferLength);
-        //    function idraw() {
-        //        if (_self._canvasUpdateMark != currentMark) {
-        //            return;
-        //        }
-        //        drawVisual = requestAnimationFrame(idraw);
-
-        //        analyser.getByteFrequencyData(dataArray);
-
-        //        canvasCtx.fillStyle = "rgb(0, 0, 0)";
-        //        canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-        //        const barWidth = (WIDTH / bufferLength) * 2.5;
-        //        let barHeight;
-        //        let x = 0;
-        //        for (let i = 0; i < bufferLength; i++) {
-        //            barHeight = dataArray[i] / 1.5;
-
-        //            //canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
-        //            canvasCtx.fillStyle = `rgb(${barHeight + 33}, ${barHeight + 140}, ${barHeight + 124})`;
-        //            canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight);
-
-        //            x += barWidth + 1;
-        //        }
-        //    }
-        //    idraw();
-        //    //    analyser.disconnect(Howler.ctx.destination);
-        //    //    Howler.masterGain.connect(Howler.ctx.destination);
-        //    //    _self.updateCanvas();
+        // TODO new ResizeObserver(() => {
         //}).observe(parentDiv);
 
         var currentMark = this._canvasUpdateMark;
@@ -126,6 +128,13 @@ window.audio = {
         }
 
         draw();
+    },
+
+    get_balance: function () {
+        if (this._panNode == undefined) {
+            return 0;
+        }
+        return this._panNode.pan.value;
     },
 
     get_bass: function () {
@@ -162,6 +171,13 @@ window.audio = {
 
     pause: function () {
         this._sound.pause();
+    },
+
+    set_balance: function (value) {
+        if (this._panNode == undefined) {
+            return;
+        }
+        this._panNode.pan.value = value;
     },
 
     set_bass: function (value) {

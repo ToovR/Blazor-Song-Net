@@ -1,4 +1,8 @@
-﻿.frame {
+﻿html{
+    overflow:hidden;
+}
+
+.frame {
     background: black;
     opacity: 0.8;
 }
@@ -13,7 +17,7 @@
 }
 
 .active {
-    background-color: #ADFFAD;
+    background-color: #00E2C0;
 }
 
 #librarySearchDiv {
@@ -65,12 +69,20 @@
 
 
 
-#podcast .table-scroll {
+#podcastepisode.collapse .table-scroll {
+    height: 450px;
+}
+
+#podcastepisode.expand .table-scroll {
+    height: 250px;
+}
+
+#podcastchannel .table-scroll {
     height: 450px;
 }
 
 .label {
-    color: limegreen;
+    color: #00E2C0;
 }
 
 input[type=range][orient=vertical] {

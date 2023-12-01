@@ -12,6 +12,7 @@ namespace Blazor.Song.Net.Client.Interfaces
         TrackInfo CurrentTrack { get; set; }
         string Filter { get; set; }
         bool IsPlaying { get; set; }
+        bool IsPlayingEnabled { get; }
 
         Task DownloadTrack(TrackInfo trackInfo);
 
@@ -24,8 +25,6 @@ namespace Blazor.Song.Net.Client.Interfaces
         Task<List<TrackInfo>> GetSongs(string filter);
 
         Task<List<TrackInfo>> GetTracks(string idList);
-
-        void InitializeTimeRefresh();
 
         Task<bool> LoadLibrary();
 

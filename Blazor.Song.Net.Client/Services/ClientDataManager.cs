@@ -42,6 +42,14 @@ namespace Blazor.Song.Net.Client.Services
         public string Filter { get; set; }
         public bool IsPlaying { get; set; }
 
+        public bool IsPlayingEnabled
+        {
+            get
+            {
+                return CurrentTrack != null;
+            }
+        }
+
         public async Task DownloadTrack(TrackInfo trackInfo)
         {
             Console.WriteLine($" t : {trackInfo.Title}, c : {trackInfo.CollectionId}");
@@ -79,11 +87,6 @@ namespace Blazor.Song.Net.Client.Services
         public async Task<List<TrackInfo>> GetTracks(string idList)
         {
             return (await _client.GetFromJsonAsync<TrackInfo[]>($"api/Track/Tracks?ids={idList ?? ""}")).ToList();
-        }
-
-        public void InitializeTimeRefresh()
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<bool> LoadLibrary()

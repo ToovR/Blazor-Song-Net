@@ -46,17 +46,17 @@ namespace Blazor.Song.Net.Client.Services
 
         public void Pause()
         {
-            _jsRuntime.InvokeAsync<bool>("audio.pause");
+            _jsRuntime.InvokeVoidAsync("audio.pause");
         }
 
         public void Play(string path)
         {
-            _jsRuntime.InvokeAsync<bool>("audio.play", path);
+            _jsRuntime.InvokeVoidAsync("audio.play", path);
         }
 
         public async Task SetBass(int value)
         {
-            await _jsRuntime.InvokeAsync<bool>("audio.set_bass", value);
+            await _jsRuntime.InvokeVoidAsync("audio.set_bass", value);
         }
 
         public async Task SetOnEnded(Action onEnded)
@@ -78,12 +78,22 @@ namespace Blazor.Song.Net.Client.Services
         public void SetTimeout(Action refreshTimeStatus, int timeout)
         {
             _timeoutAction = refreshTimeStatus;
-            _jsRuntime.InvokeAsync<bool>("audio.setProgressTimeout", timeout);
+            _jsRuntime.InvokeVoidAsync("audio.setProgressTimeout", timeout);
+        }
+
+        public async Task SetBalance(double value)
+        {
+            await _jsRuntime.InvokeVoidAsync("audio.set_balance", value);
+        }
+
+        public async Task<double> GetBalance()
+        {
+            return await _jsRuntime.InvokeAsync<double>("audio.get_balance");
         }
 
         public async Task SetTreble(int value)
         {
-            await _jsRuntime.InvokeAsync<bool>("audio.set_treble", value);
+            await _jsRuntime.InvokeVoidAsync("audio.set_treble", value);
         }
 
         [JSInvokable]

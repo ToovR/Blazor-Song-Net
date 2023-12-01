@@ -8,6 +8,11 @@ namespace Blazor.Song.Net.Services
         {
         }
 
+        public Task<double> GetBalance()
+        {
+            return Task.FromResult(0.0);
+        }
+
         public Task<int> GetBass()
         {
             return Task.FromResult(0);
@@ -29,6 +34,11 @@ namespace Blazor.Song.Net.Services
 
         public void Play(string path)
         {
+        }
+
+        public Task SetBalance(double value)
+        {
+            return Task.CompletedTask;
         }
 
         public Task SetBass(int value)

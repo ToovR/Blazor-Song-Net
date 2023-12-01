@@ -3,7 +3,7 @@
 @using Blazor.Song.Net.Client;
 @using Blazor.Song.Net.Shared;
 
-<div id="podcast" name="library" class="content section">
+<div name="library" class="content section">
     <!-- Podcasts subscribed/Podcast search-->
     <div name="searchPanel" class="field is-fullwidth">
         <div id="librarySearchDiv" class="control is-fullwidth" style="display:contents">
@@ -19,7 +19,7 @@
         </div>
     </div>
     <div class="columns">
-        <div class="column">
+        <div id="podcastchannel" class="column">
             <div name="songList" class="table-container frame light-table">
                 <div class="table-scroll">
                     <table class="table is-hoverable is-fullwidth is-narrow">
@@ -63,7 +63,7 @@
                 </div>
             </div>
         </div>
-        <div class="column">
+        <div id="podcastepisode" class="column @(CurrentChannelSummary != null ? "expand" : "collapse")">
             @if (CurrentChannelSummary != null)
             {
                 <div class="card-content pCard table-scroll podcast-card">
@@ -86,6 +86,7 @@
                     <tr @ondblclick="( e => DoubleclickPlaylistRow(context))" class="libraryRow">
                         <td>@context.Title</td>
                         <td>@context.Artist</td>
+                        <td>@context.Album</td>
                         <td>
                             @if (context.Duration != TimeSpan.Zero)
                             {

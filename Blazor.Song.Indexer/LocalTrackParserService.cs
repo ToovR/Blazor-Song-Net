@@ -1,9 +1,9 @@
 ﻿using Blazor.Song.Net.Shared;
-using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -82,7 +82,7 @@ namespace Blazor.Song.Indexer
                         Console.WriteLine($"progess - {counter * 100 / numberOfTracks}%");
                         return GetTrackInfo(musicFilePath, index, folderRoot);
                     }).ToArray();
-            return JsonConvert.SerializeObject(allTracks);
+            return JsonSerializer.Serialize(allTracks);
         }
 
         public TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)

@@ -5,12 +5,12 @@ using Azure.Storage.Files.Shares;
 using Azure.Storage.Files.Shares.Models;
 using Blazor.Song.Net.Shared;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Blazor.Song.Indexer
@@ -126,7 +126,7 @@ namespace Blazor.Song.Indexer
                         counter++;
                         return GetTrackInfo(musicFilePath, index);
                     }).ToArray();
-            return JsonConvert.SerializeObject(allTracks);
+            return JsonSerializer.Serialize(allTracks);
         }
 
         public TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)

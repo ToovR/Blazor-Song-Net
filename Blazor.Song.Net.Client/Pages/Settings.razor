@@ -1,23 +1,22 @@
 ﻿@page "/settings"
 
 <div id="settings" name="settings" class="section content section container frame">
-    <div class="field">
-        <label class="label">Fond d'écran</label>
-        <div class="control">
-            <input class="input" type="text" placeholder="image url" @bind=ImageUrl />
-        </div>
+    <div style="display: flex;flex-flow: column wrap;text-align:center">
+        <input id="balanceSlider" class="slider has-output" style="align-self:center" type="range" min="-50" max="50" @bind=CurrentBalance />
+        <output for="balanceSlider">0</output>
+        <label>Balance</label>
+    </div>
 
-        <div class="columns" style="width:150px">
-            <div class="column" style="display: flex;flex-flow: column wrap;text-align:center">
-                <input id="bassSlider" class="slider has-output" style="align-self:center" type="range" min="-40" max="40" @bind=CurrentBass orient="vertical" />
-                <output for="bassSlider">0</output>
-                <label>Basse</label>
-            </div>
-            <div class="column" style="display: flex;flex-flow: column wrap;text-align:center">
-                <input id="trebleSlider" class="slider has-output" style="align-self:center" type="range" min="-40" max="40" @bind=CurrentTreble orient="vertical" />
-                <output for="trebleSlider">0</output>
-                <label>Aigus</label>
-            </div>
+    <div class="columns" style="width:150px">
+        <div class="column" style="display: flex;flex-flow: column wrap;text-align:center">
+            <input id="bassSlider" class="slider has-output" style="align-self:center" type="range" min="-40" max="40" @bind=CurrentBass orient="vertical" />
+            <output for="bassSlider">0</output>
+            <label>Basse</label>
+        </div>
+        <div class="column" style="display: flex;flex-flow: column wrap;text-align:center">
+            <input id="trebleSlider" class="slider has-output" style="align-self:center" type="range" min="-40" max="40" @bind=CurrentTreble orient="vertical" />
+            <output for="trebleSlider">0</output>
+            <label>Aigus</label>
         </div>
     </div>
 </div>

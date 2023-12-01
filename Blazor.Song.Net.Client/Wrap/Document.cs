@@ -1,5 +1,4 @@
 ﻿using Microsoft.JSInterop;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Wrap
 {
@@ -14,7 +13,7 @@ namespace Blazor.Song.Net.Client.Wrap
 
         public async Task UpdateTitle(string newValue)
         {
-            await JsRuntime.InvokeAsync<bool>("document.updateTitle", newValue);
+            await JsRuntime.InvokeVoidAsync("document.updateTitle", newValue);
         }
     }
 }
