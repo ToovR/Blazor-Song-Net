@@ -1,5 +1,4 @@
 ﻿export function afterWebStarted(blazor) {
-    console.log("beforeWebAssemblyStart");
     var bulmaSliderSrcipt = document.createElement('script');
     bulmaSliderSrcipt.setAttribute('src', 'lib/bulma-slider/dist/js/bulma-slider.js');
     document.head.appendChild(bulmaSliderSrcipt);

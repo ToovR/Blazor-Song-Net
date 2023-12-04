@@ -1,7 +1,6 @@
 using Blazor.Song.Net.Client.Components;
 using Blazor.Song.Net.Client.Helpers;
 using Blazor.Song.Net.Shared;
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 
 namespace Blazor.Song.Net.Client.Pages
@@ -29,7 +28,7 @@ namespace Blazor.Song.Net.Client.Pages
                     return;
                 }
                 _filter = decodedValue ?? "";
-                LocalStorage.SetItemAsync("FILTER", _filter);
+                Data.SetFilter(_filter);
                 UpdateLibrary(Filter);
             }
         }
@@ -47,9 +46,6 @@ namespace Blazor.Song.Net.Client.Pages
 
         [Inject]
         private PersistentComponentState ApplicationState { get; set; }
-
-        [Inject]
-        private ILocalStorageService LocalStorage { get; set; }
 
         public void AddPlaylistClick(TrackInfo track)
         {
@@ -79,52 +75,19 @@ namespace Blazor.Song.Net.Client.Pages
         {
             _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
 
-            if (Data.CurrentRenderMode == RenderModes.Server)
-            {
-                if (!ApplicationState.TryTakeFromJson("ALLTRACKS", out TrackInfo[]? allTracks))
-                {
-                    _allTracks = await Data.GetSongs(null);
-                }
-                else
-                {
-                    _allTracks = allTracks!;
-                }
-            }
-            else
-            {
-                TrackInfo[] tracks = await LocalStorage.GetItemAsync<TrackInfo[]>("ALLTRACKS");
-                if (tracks == null)
-                {
-                    _allTracks = await Data.GetSongs(null);
-                    await LocalStorage.SetItemAsync("ALLTRACKS", _allTracks);
-                }
-                else
-                {
-                    _allTracks = tracks;
-                }
-
-                if (!string.IsNullOrEmpty(FilterParameter))
-                {
-                    _filter = FilterParameter;
-                }
-                else
-                {
-                    string filter = await LocalStorage.GetItemAsync<string>("FILTER");
-
-                    if (filter != null)
-                    {
-                        _filter = filter ?? "";
-                    }
-                }
-            }
+            _allTracks = await Data.GetAllSongs();
 
             if (!string.IsNullOrEmpty(FilterParameter))
             {
                 _filter = FilterParameter;
             }
-            else if (ApplicationState.TryTakeFromJson("FILTER", out string? filter))
+            else
             {
-                _filter = filter ?? "";
+                string? filter = await Data.GetFilter();
+                if (filter != null)
+                {
+                    _filter = filter;
+                }
             }
 
             if (_allTracks.Length == 0)

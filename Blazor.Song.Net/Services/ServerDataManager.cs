@@ -6,13 +6,15 @@ namespace Blazor.Song.Net.Services
 {
     public class ServerDataManager : IDataManager
     {
+        private readonly PersistentComponentState _applicationState;
         private readonly ILibraryStore _libraryStore;
         private readonly IPodcastStore _podcastStore;
         private TrackInfo _currentTrack;
         private PersistingComponentStateSubscription _persistingSubscription;
 
-        public ServerDataManager(ILibraryStore libraryStore, IPodcastStore podcastStore)
+        public ServerDataManager(ILibraryStore libraryStore, IPodcastStore podcastStore, PersistentComponentState applicationState)
         {
+            _applicationState = applicationState;
             _libraryStore = libraryStore;
             _podcastStore = podcastStore;
         }
@@ -61,6 +63,20 @@ namespace Blazor.Song.Net.Services
             }
         }
 
+        public async Task<TrackInfo[]> GetAllSongs()
+        {
+            TrackInfo[] allTracks;
+            if (!_applicationState.TryTakeFromJson("ALLTRACKS", out TrackInfo[]? tracks))
+            {
+                allTracks = await GetSongs(null);
+            }
+            else
+            {
+                allTracks = tracks!;
+            }
+            return allTracks;
+        }
+
         public Task<List<PodcastChannel>> GetChannels(string filter)
         {
             PodcastChannel[] channels = _podcastStore.GetChannels(filter);
@@ -71,6 +87,12 @@ namespace Blazor.Song.Net.Services
         {
             Feed feed = await _podcastStore.GetChannelEpisodes(collectionId);
             return feed;
+        }
+
+        public Task<string?> GetFilter()
+        {
+            _applicationState.TryTakeFromJson("FILTER", out string? filter);
+            return Task<string>.FromResult(filter);
         }
 
         public async Task<List<PodcastChannel>> GetNewChannels(string filter)
@@ -129,6 +151,11 @@ namespace Blazor.Song.Net.Services
         public async Task SavePlaylist(string idList)
         {
             await _libraryStore.SavePlaylist(idList);
+        }
+
+        public Task SetFilter(string filter)
+        {
+            return Task.CompletedTask;
         }
 
         public async Task SubscribeToPodcast(PodcastChannel podcastChannel)

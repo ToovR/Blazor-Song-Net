@@ -16,9 +16,13 @@ namespace Blazor.Song.Net.Client.Interfaces
 
         Task DownloadTrack(TrackInfo trackInfo);
 
+        Task<TrackInfo[]> GetAllSongs();
+
         Task<List<PodcastChannel>> GetChannels(string filter);
 
         Task<Feed> GetEpisodes(long collectionId);
+
+        public Task<string?> GetFilter();
 
         Task<List<PodcastChannel>> GetNewChannels(string filter);
 
@@ -31,6 +35,8 @@ namespace Blazor.Song.Net.Client.Interfaces
         Task<string> LoadPlaylist();
 
         Task SavePlaylist(string idList);
+
+        Task SetFilter(string filter);
 
         Task SubscribeToPodcast(PodcastChannel channel);
     }

@@ -1,5 +1,6 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
+using Blazored.LocalStorage;
 using System.Net.Http.Json;
 using System.Web;
 
@@ -8,12 +9,13 @@ namespace Blazor.Song.Net.Client.Services
     public class ClientDataManager : IDataManager
     {
         private readonly HttpClient _client;
-
+        private readonly ILocalStorageService _localStorage;
         private TrackInfo _currentTrack;
 
-        public ClientDataManager(HttpClient client)
+        public ClientDataManager(ILocalStorageService localStorage, HttpClient client)
         {
             _client = client;
+            _localStorage = localStorage;
         }
 
         public delegate void PlaylistChangedDelegate();
@@ -63,6 +65,23 @@ namespace Blazor.Song.Net.Client.Services
             }
         }
 
+        public async Task<TrackInfo[]> GetAllSongs()
+        {
+            TrackInfo[] allTracks;
+            TrackInfo[] tracks = await _localStorage.GetItemAsync<TrackInfo[]>("ALLTRACKS");
+            if (tracks == null)
+            {
+                allTracks = await GetSongs(null);
+                await _localStorage.SetItemAsync("ALLTRACKS", allTracks);
+            }
+            else
+            {
+                allTracks = tracks;
+            }
+
+            return allTracks;
+        }
+
         public async Task<List<PodcastChannel>> GetChannels(string filter)
         {
             var channels = (await _client.GetFromJsonAsync<PodcastChannel[]>($"api/Podcast/Channels?filter={filter ?? ""}")).ToList();
@@ -72,6 +91,11 @@ namespace Blazor.Song.Net.Client.Services
         public async Task<Feed> GetEpisodes(Int64 collectionId)
         {
             return await _client.GetFromJsonAsync<Feed>($"api/Podcast/GetChannelEpisodes?collectionId={collectionId}");
+        }
+
+        public async Task<string?> GetFilter()
+        {
+            return await _localStorage.GetItemAsync<string>("FILTER");
         }
 
         public async Task<List<PodcastChannel>> GetNewChannels(string filter)
@@ -102,6 +126,11 @@ namespace Blazor.Song.Net.Client.Services
         public async Task SavePlaylist(string idList)
         {
             await _client.PostAsJsonAsync($"api/Library/Playlist", idList);
+        }
+
+        public async Task SetFilter(string filter)
+        {
+            await _localStorage.SetItemAsync("FILTER", filter);
         }
 
         public async Task SubscribeToPodcast(PodcastChannel podcastChannel)
