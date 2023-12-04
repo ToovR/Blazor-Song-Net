@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 
 namespace Blazor.Song.Net.Client.Components
 {
-    public partial class PlayerInfo : ComponentBase
+    public partial class PlayerInfo
     {
         [Inject]
         public IAudioService AudioService { get; set; }

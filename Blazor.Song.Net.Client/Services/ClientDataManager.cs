@@ -20,9 +20,9 @@ namespace Blazor.Song.Net.Client.Services
 
         public event CurrentTrackChangedDelegate CurrentTrackChanged;
 
-        public string CurrentRenderMode
+        public RenderModes CurrentRenderMode
         {
-            get { return "Client"; }
+            get { return RenderModes.Client; }
         }
 
         public TrackInfo CurrentTrack
@@ -79,9 +79,9 @@ namespace Blazor.Song.Net.Client.Services
             return (await _client.GetFromJsonAsync<PodcastChannelResponse>($"api/Podcast/NewChannels?filter={filter ?? ""}")).Results.ToList();
         }
 
-        public async Task<List<TrackInfo>> GetSongs(string filter)
+        public async Task<TrackInfo[]> GetSongs(string? filter)
         {
-            return (await _client.GetFromJsonAsync<TrackInfo[]>($"api/Library/Tracks?filter={filter ?? ""}")).ToList();
+            return (await _client.GetFromJsonAsync<TrackInfo[]>($"api/Library/Tracks?filter={filter ?? ""}")).ToArray();
         }
 
         public async Task<List<TrackInfo>> GetTracks(string idList)

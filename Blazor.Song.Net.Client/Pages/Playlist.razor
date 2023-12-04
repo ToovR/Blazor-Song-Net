@@ -1,5 +1,9 @@
-﻿ @page "/"
+﻿@page "/"
  @page "/playlist"
+ @inherits PageBase
+ 
+<PageTitle>@Title</PageTitle>
+
 <div id="playlist">
     <SongList Tracks="@PlaylistTracks.ToList()" CurrentTrack=@Data.CurrentTrack>
         <RowTemplate>

@@ -12,7 +12,7 @@ namespace Blazor.Song.Net.Services
 
         bool LoadLibrary();
 
-        Task<string?> LoadPlaylist();
+        Task<string> LoadPlaylist();
 
         Task SavePlaylist(string idList);
     }

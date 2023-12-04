@@ -1,7 +1,8 @@
 ﻿@page "/PodcastLibrary"
 @page "/PodcastLibrary/{Filter}"
-@using Blazor.Song.Net.Client;
-@using Blazor.Song.Net.Shared;
+@inherits PageBase
+
+<PageTitle>@Title</PageTitle>
 
 <div name="library" class="content section">
     <!-- Podcasts subscribed/Podcast search-->

@@ -17,7 +17,6 @@ namespace Blazor.Song.Net
                 services.AddScoped<ITrackParserService, LocalTrackParserService>();
             }
 
-            services.AddScoped<IFileHelper, FileHelper>();
             services.AddScoped<IPodcastStore, PodcastStore>();
             services.AddScoped<ILibraryStore, LibraryStore>();
             services.AddScoped<IDataManager, ServerDataManager>();

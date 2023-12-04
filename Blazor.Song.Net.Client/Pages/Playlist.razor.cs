@@ -6,13 +6,10 @@ using System.Collections.Specialized;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public partial class Playlist : ComponentBase
+    public partial class Playlist : PageBase
     {
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
-
-        [Inject]
-        protected IDataManager Data { get; set; }
 
         public void RemovePlaylistTrack(Int64 trackInfoId)
         {
@@ -39,7 +36,7 @@ namespace Blazor.Song.Net.Client.Pages
                 PlaylistTracks.CollectionChanged -= PlaylistChanged;
             }
             await LoadPlaylist();
-            Data.CurrentTrackChanged += CurrentTrackChanged;
+
             PlaylistTracks.CollectionChanged += PlaylistChanged;
 
             await base.OnInitializedAsync();
@@ -76,11 +73,6 @@ namespace Blazor.Song.Net.Client.Pages
                 SetCurrentTrackNext();
 
             RemovePlaylistTrack(id);
-        }
-
-        private async Task CurrentTrackChanged(TrackInfo track)
-        {
-            this.StateHasChanged();
         }
 
         private async Task LoadPlaylist()

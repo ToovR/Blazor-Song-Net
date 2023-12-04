@@ -1,12 +1,11 @@
 using Blazor.Song.Net.Client.Helpers;
-using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public partial class PodcastLibrary : ComponentBase
+    public partial class PodcastLibrary : PageBase
     {
         public List<PodcastChannel> ChannelsFiltered { get; private set; }
         public TrackInfo CurrentChannel { get; set; }
@@ -34,10 +33,7 @@ namespace Blazor.Song.Net.Client.Pages
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
-        public List<TrackInfo> TrackListFiltered { get; set; }
-
-        [Inject]
-        private IDataManager Data { get; set; }
+        public TrackInfo[] TrackListFiltered { get; set; }
 
         public async Task ClickChannelRow(PodcastChannel channel)
         {

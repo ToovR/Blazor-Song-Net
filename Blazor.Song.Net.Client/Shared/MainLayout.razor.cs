@@ -16,7 +16,7 @@ namespace Blazor.Song.Net.Client.Shared
                 {
                     return string.Empty;
                 }
-                return Data?.CurrentRenderMode;
+                return Data?.CurrentRenderMode.ToString() ?? "";
             }
         }
 
@@ -30,15 +30,16 @@ namespace Blazor.Song.Net.Client.Shared
             PlaylistTracks.CollectionChanged += PlaylistTracksCollectionChanged;
             if (PlaylistTracks.Count > 0)
                 Data.CurrentTrack = PlaylistTracks[0];
+
             await base.OnInitializedAsync();
         }
 
         private void PlaylistTracksCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.NewItems != null && e.NewItems.Count > 0)
+            if (e.NewItems != null && e.NewItems.Count > 0 & Data.CurrentRenderMode == RenderModes.Client)
             {
                 Console.WriteLine(e.NewItems[0]);
-                Data.DownloadTrack(((TrackInfo)e.NewItems[0]));
+                Data.DownloadTrack((TrackInfo)e.NewItems[0]);
             }
         }
     }

@@ -15,7 +15,6 @@ window.audio = {
             src: [trackPath],
             onend: function () {
                 self._serviceRef.invokeMethodAsync('AudioEnded');
-                //self.onended();
             }
         });
 
@@ -36,50 +35,23 @@ window.audio = {
             this._trebleFilter.connect(this._panNode);
         }
 
-        //setTimeout(function () { self.spyEndOfSong(self); }, 1000);
-
         const gainNode = newSound._sounds[0]._node;
         gainNode.disconnect(Howler.masterGain);
         gainNode.connect(this._bassFilter);
         this._bassFilter.connect(this._trebleFilter);
         this._trebleFilter.connect(this._panNode);
         this._panNode.connect(Howler.masterGain);
-        //this.addBalance(Howler.ctx, this._trebleFilter, Howler.masterGain);
-
-        // default pan set to 0 - center
 
         // PRES equalizer
         this.updateCanvas();
         return newSound;
     },
-    //addBalance: function (audioContext, source, destination) {
-    //    this._volumeNodeL = new GainNode(audioContext);
-    //    this._volumeNodeR = new GainNode(audioContext);
 
-    //    this._volumeNodeL.gain.value = 2;
-    //    this._volumeNodeR.gain.value = 2;
-
-    //    const channelsCount = 2; // or read from: 'audioSource.channelCount'
-
-    //    const splitterNode = new ChannelSplitterNode(audioContext, { numberOfOutputs: channelsCount });
-    //    const mergerNode = new ChannelMergerNode(audioContext, { numberOfInputs: channelsCount });
-
-    //    source.connect(splitterNode);
-
-    //    splitterNode.connect(this._volumeNodeL, 0); // connect OUTPUT channel 0
-    //    splitterNode.connect(this._volumeNodeR, 1); // connect OUTPUT channel 1
-
-    //    _volumeNodeL.connect(mergerNode, 0, 0); // connect INPUT channel 0
-    //    volumeNodeR.connect(mergerNode, 0, 1); // connect INPUT channel 1
-
-    //    mergerNode.connect(destination);
-    //},
     updateCanvas: function () {
         this._canvasUpdateMark++;
         const canvas = document.getElementById("equalizer");
         const canvasCtx = canvas.getContext("2d");
-        const parentDiv = document.body; // document.getElementById("equalizerDiv");
-
+        const parentDiv = document.body;
         _self = this;
 
         var WIDTH = parentDiv.offsetWidth;
@@ -117,9 +89,7 @@ window.audio = {
             let barHeight;
             let x = 0;
             for (let i = 0; i < bufferLength; i++) {
-                barHeight = dataArray[i] * 6; // / 1.5;
-
-                //canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+                barHeight = dataArray[i] * 6;
                 canvasCtx.fillStyle = `rgb(${barHeight / 10 + 33}, ${barHeight / 10 + 140}, ${barHeight / 10 + 124})`;
                 canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight);
 
@@ -223,10 +193,6 @@ window.cookie.get = () => {
 
 window.cookie.set = (cookieValue) => {
     document.cookie = cookieValue;
-};
-
-window.document.updateTitle = (newValue) => {
-    window.document.title = newValue;
 };
 
 window.element = () => { };

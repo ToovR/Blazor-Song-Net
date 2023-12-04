@@ -1,15 +1,15 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
+using Microsoft.AspNetCore.Components;
 
 namespace Blazor.Song.Net.Services
 {
     public class ServerDataManager : IDataManager
     {
         private readonly ILibraryStore _libraryStore;
-
         private readonly IPodcastStore _podcastStore;
-
         private TrackInfo _currentTrack;
+        private PersistingComponentStateSubscription _persistingSubscription;
 
         public ServerDataManager(ILibraryStore libraryStore, IPodcastStore podcastStore)
         {
@@ -21,9 +21,9 @@ namespace Blazor.Song.Net.Services
 
         public event CurrentTrackChangedDelegate CurrentTrackChanged;
 
-        public string CurrentRenderMode
+        public RenderModes CurrentRenderMode
         {
-            get { return "Server"; }
+            get { return RenderModes.Server; }
         }
 
         public TrackInfo CurrentTrack
@@ -79,12 +79,12 @@ namespace Blazor.Song.Net.Services
             return channels.Results.ToList();
         }
 
-        public async Task<List<TrackInfo>> GetSongs(string filter)
+        public async Task<TrackInfo[]> GetSongs(string? filter)
         {
             try
             {
                 TrackInfo[] filteredTracks = _libraryStore.GetTracks(filter);
-                return filteredTracks.ToList();
+                return filteredTracks;
             }
             catch (Exception)
             {

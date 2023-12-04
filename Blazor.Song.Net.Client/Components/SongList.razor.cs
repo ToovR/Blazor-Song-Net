@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Blazor.Song.Net.Client.Components
 {
-    public partial class SongList : ComponentBase
+    public partial class SongList
     {
         [Parameter]
         public TrackInfo CurrentTrack { get; set; }
@@ -12,6 +12,6 @@ namespace Blazor.Song.Net.Client.Components
         public RenderFragment<TrackInfo> RowTemplate { get; set; }
 
         [Parameter]
-        public List<TrackInfo> Tracks { get; set; }
+        public IEnumerable<TrackInfo> Tracks { get; set; }
     }
 }

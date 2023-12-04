@@ -63,26 +63,7 @@ namespace Blazor.Song.Indexer
 
         public string GetTrackContent()
         {
-            return System.IO.File.ReadAllText(_libraryFile);
-        }
-
-        public string GetTrackData()
-        {
-            int counter = 0;
-            Uri folderRoot = new(_musicDirectoryRoot);
-
-            var trackEnum = Directory.GetFiles(_musicDirectoryRoot, "*.*", SearchOption.AllDirectories)
-                .Where(file => _musicFileRegex.IsMatch(file));
-            int numberOfTracks = trackEnum.Count();
-
-            TrackInfo[] allTracks = trackEnum.AsParallel()
-                    .Select((musicFilePath, index) =>
-                    {
-                        counter++;
-                        Console.WriteLine($"progess - {counter * 100 / numberOfTracks}%");
-                        return GetTrackInfo(musicFilePath, index, folderRoot);
-                    }).ToArray();
-            return JsonSerializer.Serialize(allTracks);
+            return File.ReadAllText(_libraryFile);
         }
 
         public TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
@@ -161,6 +142,25 @@ namespace Blazor.Song.Indexer
 
         [GeneratedRegex(".*\\.(mp3|ogg|flac)$", RegexOptions.IgnoreCase, "fr-FR")]
         private static partial Regex MusicFileRegex();
+
+        private string GetTrackData()
+        {
+            int counter = 0;
+            Uri folderRoot = new(_musicDirectoryRoot);
+
+            var trackEnum = Directory.GetFiles(_musicDirectoryRoot, "*.*", SearchOption.AllDirectories)
+                .Where(file => _musicFileRegex.IsMatch(file));
+            int numberOfTracks = trackEnum.Count();
+
+            TrackInfo[] allTracks = trackEnum.AsParallel()
+                    .Select((musicFilePath, index) =>
+                    {
+                        counter++;
+                        Console.WriteLine($"progess - {counter * 100 / numberOfTracks}%");
+                        return GetTrackInfo(musicFilePath, index, folderRoot);
+                    }).ToArray();
+            return JsonSerializer.Serialize(allTracks);
+        }
 
         private async Task<byte[]> ReadFile(string path)
         {

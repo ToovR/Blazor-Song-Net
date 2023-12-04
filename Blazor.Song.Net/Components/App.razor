@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>song.net</title>
     <base href="/" />
 
     <link rel="stylesheet" href="/lib/bulma-slider/dist/css/bulma-slider.min.css" />
@@ -20,10 +19,7 @@
 
 <body>
     <Blazor.Song.Net.Client.Shared.Routes @rendermode="InteractiveAuto"/>
-    <script src="lib/bulma-slider/dist/js/bulma-slider.js"></script>
-    <script src="lib/howler/howler.core.min.js"></script>
-    <script src="Wrap.js"></script>
     <script src="_framework/blazor.web.js"></script>
-@*     <SectionOutlet SectionName="script" />
- *@</body>
+    <persist-component-state />
+</body>
 </html>

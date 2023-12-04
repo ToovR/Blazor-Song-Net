@@ -27,12 +27,12 @@
                 }
             </Template>
         </ButtonPlayer>
-        <ButtonPlayer IsEnabled="@IsPlayingEnabled" OnClick="(async () => { await AudioService.AddTime(5, Data.CurrentTrack.Duration.TotalSeconds); })">
+        <ButtonPlayer IsEnabled="true" OnClick="(async () => { await AudioService.AddTime(5, Data.CurrentTrack.Duration.TotalSeconds); })">
             <Template>
                 <i class="fa fa-forward"></i>
             </Template>
         </ButtonPlayer>
-        <ButtonPlayer IsEnabled="@IsPlayingEnabled" OnClick="NextTrackClick">
+        <ButtonPlayer IsEnabled="true" OnClick="NextTrackClick">
             <Template>
                 <i class="fa fa-fast-forward"></i>
             </Template>

@@ -1,39 +1,55 @@
+using Blazor.Song.Net.Client.Components;
 using Blazor.Song.Net.Client.Helpers;
-using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public partial class Library : ComponentBase
+    public partial class Library : PageBase
     {
+        private TrackInfo[] _allTracks = [];
+        private string _filter = string.Empty;
+        private PersistingComponentStateSubscription _persistingSubscription;
+        private SongList _songList;
         public TrackInfo CurrentTrack { get; set; }
 
-        [Parameter]
         public string Filter
         {
-            get { return Data.Filter; }
+            get { return _filter; }
             set
             {
-                string decodedValue = null;
+                string? decodedValue = null;
                 if (value != null)
+                {
                     decodedValue = Uri.UnescapeDataString(value);
-                if (Data.Filter == decodedValue)
+                }
+                if (_filter == decodedValue)
+                {
                     return;
-                Data.Filter = decodedValue;
+                }
+                _filter = decodedValue ?? "";
+                LocalStorage.SetItemAsync("FILTER", _filter);
+                UpdateLibrary(Filter);
             }
         }
+
+        [Parameter]
+        public string? FilterParameter
+        { get; set; }
 
         public bool IsLibraryLoaded { get; private set; }
 
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
-        public List<TrackInfo> TrackListFiltered { get; set; }
+        public TrackInfo[] TrackListFiltered { get; set; }
 
         [Inject]
-        private IDataManager Data { get; set; }
+        private PersistentComponentState ApplicationState { get; set; }
+
+        [Inject]
+        private ILocalStorageService LocalStorage { get; set; }
 
         public void AddPlaylistClick(TrackInfo track)
         {
@@ -49,54 +65,90 @@ namespace Blazor.Song.Net.Client.Pages
             track.ClickMarker = !track.ClickMarker;
         }
 
-        public async Task SearchKeyUp(KeyboardEventArgs e)
-        {
-            if (e.Key == "Enter")
-            {
-                Console.WriteLine($"current filter : {Filter}");
-                await UpdateLibrary(Data.Filter);
-            }
-        }
-
-        protected async Task FilterClick()
-        {
-            string filter = Data.Filter;
-            await UpdateLibrary(filter);
-        }
-
         protected async Task LoadLibraryClick()
         {
             bool loaded = await Data.LoadLibrary();
             if (loaded)
             {
                 IsLibraryLoaded = true;
-                await UpdateLibrary(Data.Filter);
+                await UpdateLibrary(_filter);
             }
         }
 
         protected override async Task OnInitializedAsync()
         {
-            if ((await Data.GetSongs(null)).Count == 0)
+            _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
+
+            if (Data.CurrentRenderMode == RenderModes.Server)
+            {
+                if (!ApplicationState.TryTakeFromJson("ALLTRACKS", out TrackInfo[]? allTracks))
+                {
+                    _allTracks = await Data.GetSongs(null);
+                }
+                else
+                {
+                    _allTracks = allTracks!;
+                }
+            }
+            else
+            {
+                TrackInfo[] tracks = await LocalStorage.GetItemAsync<TrackInfo[]>("ALLTRACKS");
+                if (tracks == null)
+                {
+                    _allTracks = await Data.GetSongs(null);
+                    await LocalStorage.SetItemAsync("ALLTRACKS", _allTracks);
+                }
+                else
+                {
+                    _allTracks = tracks;
+                }
+
+                if (!string.IsNullOrEmpty(FilterParameter))
+                {
+                    _filter = FilterParameter;
+                }
+                else
+                {
+                    string filter = await LocalStorage.GetItemAsync<string>("FILTER");
+
+                    if (filter != null)
+                    {
+                        _filter = filter ?? "";
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(FilterParameter))
+            {
+                _filter = FilterParameter;
+            }
+            else if (ApplicationState.TryTakeFromJson("FILTER", out string? filter))
+            {
+                _filter = filter ?? "";
+            }
+
+            if (_allTracks.Length == 0)
             {
                 IsLibraryLoaded = false;
                 return;
             }
+
             IsLibraryLoaded = true;
-            await UpdateLibrary(Data.Filter);
+            await UpdateLibrary(_filter);
             await base.OnInitializedAsync();
         }
 
-        protected async Task SearchInputKeyPressed(KeyboardEventArgs keybordEvent)
+        private Task PersistData()
         {
-            if (keybordEvent.Key == "Enter")
-            {
-                await FilterClick();
-            }
+            ApplicationState.PersistAsJson("ALLTRACKS", _allTracks);
+            ApplicationState.PersistAsJson("FILTER", _filter);
+            return Task.CompletedTask;
         }
 
-        private async Task UpdateLibrary(string filter)
+        private Task UpdateLibrary(string filter)
         {
-            TrackListFiltered = await Data.GetSongs(filter);
+            TrackListFiltered = _allTracks.GetTracks(filter);
+            return Task.CompletedTask;
         }
     }
 }

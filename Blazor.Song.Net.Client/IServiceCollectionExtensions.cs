@@ -1,5 +1,6 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Client.Services;
+using Blazored.LocalStorage;
 
 namespace Blazor.Song.Net.Client
 {
@@ -9,7 +10,7 @@ namespace Blazor.Song.Net.Client
         {
             services.AddScoped<IDataManager, ClientDataManager>();
             services.AddScoped<IAudioService, ClientAudioService>();
-
+            services.AddBlazoredLocalStorage();
             return services;
         }
     }

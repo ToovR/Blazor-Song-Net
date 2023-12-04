@@ -1,15 +1,8 @@
 ﻿using Blazor.Song.Indexer;
 using Blazor.Song.Net.Helpers;
 using Blazor.Song.Net.Shared;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.ServiceModel.Syndication;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 
@@ -21,13 +14,10 @@ namespace Blazor.Song.Net.Services
         private readonly ITrackParserService _trackParserService;
         private List<PodcastChannel> _channels;
         private List<TrackInfo> _episodesInfo;
-        //private IMemoryCache _memoryCache;
 
         public PodcastStore(ITrackParserService trackParserService)
         {
             _trackParserService = trackParserService;
-            // Load File
-            //_memoryCache = memoryCache;
             LoadChannels();
             LoadEpisodeInfo();
         }
@@ -120,22 +110,19 @@ namespace Blazor.Song.Net.Services
         {
             PodcastChannel channel = _channels.SingleOrDefault(c => c.CollectionId == collectionId);
             if (channel == null)
-                return null;
-            string feedContent;
-            //if (!_memoryCache.TryGetValue(channel.FeedUrl, out string feedContent))
             {
-                using (HttpClient httpClient = new HttpClient())
-                {
-                    Uri uri = new Uri(channel.FeedUrl);
-                    var response = await httpClient.GetAsync(uri);
-                    feedContent = await response.Content.ReadAsStringAsync();
-                    SyndicationFeed sfeed = SyndicationFeed.Load(GenerateXmlReaderFromString(feedContent));
-                    Feed podcastFeed = sfeed.ToFeed();
-                    //_memoryCache.Set(channel.FeedUrl, JsonSerializer.Serialize(podcastFeed));
-                    return podcastFeed;
-                }
+                return null;
             }
-            return JsonSerializer.Deserialize<Feed>(feedContent);
+            string feedContent;
+            using (HttpClient httpClient = new HttpClient())
+            {
+                Uri uri = new Uri(channel.FeedUrl);
+                var response = await httpClient.GetAsync(uri);
+                feedContent = await response.Content.ReadAsStringAsync();
+                SyndicationFeed sfeed = SyndicationFeed.Load(GenerateXmlReaderFromString(feedContent));
+                Feed podcastFeed = sfeed.ToFeed();
+                return podcastFeed;
+            }
         }
 
         public async Task<PodcastChannelResponse> GetNewChannels(string filter)

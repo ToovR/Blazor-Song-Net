@@ -1,21 +1,18 @@
 ﻿using Blazor.Song.Net.Client.Helpers;
 using Blazor.Song.Net.Client.Interfaces;
-using Blazor.Song.Net.Client.Wrap;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Blazor.Song.Net.Client.Components
 {
-    public partial class Player : ComponentBase
+    public partial class Player
     {
         protected PlayerInfo playerInfo;
         private bool _isPlaying;
 
         [Inject]
         public IAudioService AudioService { get; set; }
-
-        public Document Document { get; private set; }
 
         [Inject]
         public IJSRuntime JsRuntime { get; private set; }
@@ -65,11 +62,8 @@ namespace Blazor.Song.Net.Client.Components
 
         protected override async Task OnInitializedAsync()
         {
-            Document = new Document(JsRuntime);
             IsPlayingEnabled = (Data?.IsPlayingEnabled ?? false);
             AudioService.SetTimeout(RefreshTimeStatus, 900);
-            if (Data.CurrentTrack != null)
-                await UpdateTitle(Data.CurrentTrack);
             Data.CurrentTrackChanged += CurrentTrackChanged;
             await AudioService.SetOnEnded(OnEnded);
             await base.OnInitializedAsync();
@@ -108,7 +102,7 @@ namespace Blazor.Song.Net.Client.Components
         private async Task CurrentTrackChanged(TrackInfo info)
         {
             await ChangeTrack();
-            await UpdateTitle(info);
+
             IsPlayingEnabled = info != null;
             this.StateHasChanged();
         }
@@ -151,14 +145,6 @@ namespace Blazor.Song.Net.Client.Components
             }
 
             AudioService.SetTimeout(RefreshTimeStatus, 900);
-        }
-
-        private async Task UpdateTitle(TrackInfo info)
-        {
-            if (info != null)
-                await Document.UpdateTitle($"{info.Title}, {info.Artist} - song.net");
-            else
-                await Document.UpdateTitle("song.net");
         }
     }
 }
