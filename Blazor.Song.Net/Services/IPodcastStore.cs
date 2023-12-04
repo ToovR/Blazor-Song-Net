@@ -1,6 +1,4 @@
 ﻿using Blazor.Song.Net.Shared;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Services
 {
@@ -8,7 +6,7 @@ namespace Blazor.Song.Net.Services
     {
         Task AddNewChannel(PodcastChannel podcast);
 
-        Task<byte[]> GetChannelEpisodeFile(int collectionId, string link, long id);
+        Task<byte[]> GetChannelEpisodeFile(int collectionId, long id);
 
         Task<Feed> GetChannelEpisodes(long collectionId);
 

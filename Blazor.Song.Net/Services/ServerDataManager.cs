@@ -55,7 +55,7 @@ namespace Blazor.Song.Net.Services
             Console.WriteLine($" t : {trackInfo.Title}, c : {trackInfo.CollectionId}");
             if (trackInfo.CollectionId != null)
             {
-                byte[] file = await _podcastStore.GetChannelEpisodeFile(trackInfo.CollectionId.Value, trackInfo.Path, trackInfo.Id);
+                byte[] file =  await _podcastStore.GetChannelEpisodeFile(trackInfo.CollectionId.Value, trackInfo.Id);
             }
             else
             {

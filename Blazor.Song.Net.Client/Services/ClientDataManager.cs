@@ -2,7 +2,6 @@
 using Blazor.Song.Net.Shared;
 using Blazored.LocalStorage;
 using System.Net.Http.Json;
-using System.Web;
 
 namespace Blazor.Song.Net.Client.Services
 {
@@ -57,7 +56,7 @@ namespace Blazor.Song.Net.Client.Services
             Console.WriteLine($" t : {trackInfo.Title}, c : {trackInfo.CollectionId}");
             if (trackInfo.CollectionId != null)
             {
-                await _client.GetByteArrayAsync($"api/Podcast/GetChannelEpisode?collectionId={trackInfo.CollectionId}&link={HttpUtility.UrlEncode(trackInfo.Path)}&id={trackInfo.Id}");
+                await _client.GetByteArrayAsync($"api/Podcast/GetChannelEpisode?collectionId={trackInfo.CollectionId}&id={trackInfo.Id}");
             }
             else
             {

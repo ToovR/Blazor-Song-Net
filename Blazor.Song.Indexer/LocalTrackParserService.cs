@@ -44,10 +44,13 @@ namespace Blazor.Song.Indexer
             }
             if (!Directory.Exists(feedDirectory))
                 Directory.CreateDirectory(feedDirectory);
-            using WebClient client = new();
-            string path = Path.Combine(feedDirectory, $"{id}_{urlFileName}");
-            await client.DownloadFileTaskAsync(link, path);
 
+            string path = Path.Combine(feedDirectory, $"{id}_{urlFileName}");
+            if (!File.Exists(path))
+            {
+                using WebClient client = new();
+                await client.DownloadFileTaskAsync(link, path);
+            }
             return path;
         }
 

@@ -1,13 +1,21 @@
 using Blazor.Song.Net.Client.Helpers;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.Components.Web;
+using System;
 
 namespace Blazor.Song.Net.Client.Pages
 {
     public partial class PodcastLibrary : PageBase
     {
-        public List<PodcastChannel> ChannelsFiltered { get; private set; }
+        private GridSort<PodcastChannel> sortByArtistName = GridSort<PodcastChannel>
+       .ByAscending(p => p.ArtistName);
+
+        private GridSort<PodcastChannel> sortByCollectionName = GridSort<PodcastChannel>
+        .ByAscending(p => p.CollectionName);
+
+        public IQueryable<PodcastChannel> ChannelsFiltered { get; private set; }
         public TrackInfo CurrentChannel { get; set; }
         public ChannelSummary CurrentChannelSummary { get; set; }
         public TrackInfo CurrentEpisode { get; set; }
@@ -85,11 +93,6 @@ namespace Blazor.Song.Net.Client.Pages
         protected async Task SubscribeToPodcast(PodcastChannel newPodcast)
         {
             await Data.SubscribeToPodcast(newPodcast);
-            if (newPodcast.ClickMarker == null)
-            {
-                newPodcast.ClickMarker = true;
-            }
-            newPodcast.ClickMarker = !newPodcast.ClickMarker;
             Filter = "";
             await UpdatePodcastChannel(Filter);
         }
@@ -102,13 +105,15 @@ namespace Blazor.Song.Net.Client.Pages
         private async Task UpdateNewPodcastChannel(string filter)
         {
             IsNewChannels = true;
-            ChannelsFiltered = (await Data.GetNewChannels(filter));
+            ChannelsFiltered = (await Data.GetNewChannels(filter)).AsQueryable();
+            this.StateHasChanged();
         }
 
         private async Task UpdatePodcastChannel(string filter)
         {
             IsNewChannels = false;
-            ChannelsFiltered = (await Data.GetChannels(filter)).ToList();
+            ChannelsFiltered = (await Data.GetChannels(filter)).AsQueryable();
+            this.StateHasChanged();
         }
     }
 }

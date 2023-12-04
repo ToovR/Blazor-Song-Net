@@ -3,6 +3,7 @@ using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System.Web;
 
 namespace Blazor.Song.Net.Client.Components
 {
@@ -90,7 +91,8 @@ namespace Blazor.Song.Net.Client.Components
             {
                 if (Data.CurrentTrack.Path.StartsWith("http"))
                 {
-                    AudioService.Play(Data.CurrentTrack.Path);
+                    string path = $"{NavigationManager.BaseUri}/api/Podcast/GetChannelEpisode?collectionId={Data.CurrentTrack.CollectionId}&link={HttpUtility.UrlEncode(Data.CurrentTrack.Path)}&id={Data.CurrentTrack.Id}";
+                    AudioService.Play(path);
                 }
                 else
                 {

@@ -60,10 +60,16 @@ namespace Blazor.Song.Indexer
 
             try
             {
-                using (Stream stream = await DownloadFromUrlToStream(link))
+
+
+                ShareFileClient file = feedDirectory.GetFileClient($"{id}_{urlFileName}");
+                if (!file.Exists())
                 {
-                    ShareFileClient file = feedDirectory.GetFileClient($"{id}_{urlFileName}");
-                    UploadStreamToFile(stream, file);
+                    using (Stream stream = await DownloadFromUrlToStream(link))
+                    {
+
+                        UploadStreamToFile(stream, file);
+                    }
                 }
             }
             catch (Exception ex)

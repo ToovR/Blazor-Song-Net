@@ -1,8 +1,6 @@
 ﻿using Blazor.Song.Net.Services;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Controllers
 {
@@ -24,9 +22,9 @@ namespace Blazor.Song.Net.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult> GetChannelEpisode(int collectionId, string link, long id)
+        public async Task<ActionResult> GetChannelEpisode(int collectionId, long id)
         {
-            byte[] file = await _podcastStore.GetChannelEpisodeFile(collectionId, link, id);
+            byte[] file = await _podcastStore.GetChannelEpisodeFile(collectionId, id);
             return File(file, "audio/mpeg");
         }
 

@@ -9,14 +9,15 @@ namespace Blazor.Song.Net.Controllers
     [Route("api/[controller]")]
     public class TrackController : ControllerBase
     {
+        private readonly ILibraryStore _libraryStore;
+
+        private readonly IPodcastStore _podcastStore;
+
         public TrackController(ILibraryStore libraryStore, IPodcastStore podcastStore)
         {
             _libraryStore = libraryStore;
             _podcastStore = podcastStore;
         }
-
-        private readonly ILibraryStore _libraryStore;
-        private readonly IPodcastStore _podcastStore;
 
         [HttpGet("[action]")]
         public bool LoadLibrary()
@@ -34,6 +35,10 @@ namespace Blazor.Song.Net.Controllers
         [HttpGet("[action]")]
         public TrackInfo[] Tracks(string ids)
         {
+            if (ids == null)
+            {
+                return [];
+            }
             var idList = ids.Split("|", StringSplitOptions.RemoveEmptyEntries).Select(id => long.Parse(id));
             try
             {
