@@ -57,7 +57,7 @@ namespace Blazor.Song.Net.Client.Services
             Console.WriteLine($" t : {trackInfo.Title}, c : {trackInfo.CollectionId}");
             if (trackInfo.CollectionId != null)
             {
-                await _client.GetByteArrayAsync($"api/Podcast/GetChannelEpisode?collectionId={trackInfo.CollectionId}&id={trackInfo.Id}");
+                await _client.GetByteArrayAsync($"/api/Podcast/GetChannelEpisode?collectionId={trackInfo.CollectionId}&id={trackInfo.Id}");
             }
             else
             {

@@ -11,17 +11,17 @@ namespace Blazor.Song.Indexer
 {
     public partial class LocalTrackParserService : ITrackParserService
     {
-        private const string _channelListFile = "./podcasts/channelList.json";
-        private const string _episodeListFile = "./podcasts/downloadedEpisodes.json";
+        private const string _channelListFile = "podcast/channelList.json";
+        private const string _episodeListFile = "podcast/downloadedEpisodes.json";
 
-        private const string _podcastFolder = "./podcast/";
+        private const string _podcastFolder = "podcast";
         private static readonly string _musicDirectoryRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
 
         private static object _locker = new();
         private readonly string _directoryMusicRoot = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         private readonly Regex _musicFileRegex = MusicFileRegex();
-        private string _libraryFile = "./tracks.json";
-        private string _playlistFile = "./playlist.txt";
+        private string _libraryFile = "tracks.json";
+        private string _playlistFile = "playlist.txt";
 
         public async Task<byte[]> Download(string path)
         {
@@ -30,7 +30,7 @@ namespace Blazor.Song.Indexer
 
         public async Task<string> GetChannelEpisode(int collectionId, string link, long id)
         {
-            var feedDirectory = Path.Combine(_podcastFolder, collectionId.ToString());
+            var feedDirectory = Path.Combine(_musicDirectoryRoot, _podcastFolder, collectionId.ToString());
             if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uriResult))
             {
                 return Path.Join(".", Path.Join(link.Split(Path.AltDirectorySeparatorChar).Skip(1).ToArray()));
@@ -56,17 +56,17 @@ namespace Blazor.Song.Indexer
 
         public string GetPodcastChannelListContent()
         {
-            return File.ReadAllText(_channelListFile);
+            return File.ReadAllText(Path.Combine(_musicDirectoryRoot, _channelListFile));
         }
 
         public string GetPodcastDownloadedEpisodesContent()
         {
-            return File.ReadAllText(_episodeListFile);
+            return File.ReadAllText(Path.Combine(_musicDirectoryRoot, _episodeListFile));
         }
 
         public string GetTrackContent()
         {
-            return File.ReadAllText(_libraryFile);
+            return File.ReadAllText(Path.Combine(_directoryMusicRoot, _libraryFile));
         }
 
         public TrackInfo? GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
@@ -101,14 +101,14 @@ namespace Blazor.Song.Indexer
 
         public bool IsLibraryFileExists()
         {
-            return File.Exists(_libraryFile);
+            return File.Exists(Path.Combine(_directoryMusicRoot, _libraryFile));
         }
 
         public async Task<string> LoadPlaylist()
         {
             try
             {
-                return await System.IO.File.ReadAllTextAsync(_playlistFile);
+                return await System.IO.File.ReadAllTextAsync(Path.Combine(_directoryMusicRoot, _playlistFile));
             }
             catch
             {
@@ -118,18 +118,23 @@ namespace Blazor.Song.Indexer
 
         public Task SavePlaylist(string idList)
         {
-            UpdateFile(_playlistFile, idList);
+            UpdateFile(Path.Combine(_directoryMusicRoot, _playlistFile), idList);
             return Task.CompletedTask;
         }
 
         public void UpdateChannelFile(string content)
         {
-            UpdateFile(_channelListFile, content);
+            FileInfo channelFile = new(Path.Combine(_musicDirectoryRoot, _channelListFile));
+            if (!channelFile.Directory.Exists)
+            {
+                channelFile.Directory.Create();
+            }
+            UpdateFile(channelFile.FullName, content);
         }
 
         public void UpdateEpisodeFile(string episodeFileContent)
         {
-            UpdateFile(_episodeListFile, episodeFileContent);
+            UpdateFile(Path.Combine(_musicDirectoryRoot, _episodeListFile), episodeFileContent);
         }
 
         public void UpdateFile(string filename, string fileContent)
@@ -147,7 +152,7 @@ namespace Blazor.Song.Indexer
         public void UpdateTrackData()
         {
             string fileContent = GetTrackData();
-            File.WriteAllText(_libraryFile, fileContent);
+            File.WriteAllText(Path.Combine(_directoryMusicRoot, _libraryFile), fileContent);
         }
 
         [GeneratedRegex(".*\\.(mp3|ogg|flac)$", RegexOptions.IgnoreCase, "fr-FR")]
@@ -159,7 +164,7 @@ namespace Blazor.Song.Indexer
             Uri folderRoot = new(_musicDirectoryRoot);
 
             var trackEnum = Directory.GetFiles(_musicDirectoryRoot, "*.*", SearchOption.AllDirectories)
-                .Where(file => _musicFileRegex.IsMatch(file));
+                .Where(file => !file.Contains("podcast") && _musicFileRegex.IsMatch(file));
             int numberOfTracks = trackEnum.Count();
 
             TrackInfo[] allTracks = trackEnum.AsParallel()

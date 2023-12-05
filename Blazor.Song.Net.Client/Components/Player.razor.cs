@@ -89,15 +89,7 @@ namespace Blazor.Song.Net.Client.Components
             }
             if (IsPlaying)
             {
-                if (Data.CurrentTrack.Path.StartsWith("http"))
-                {
-                    string path = $"{NavigationManager.BaseUri}/api/Podcast/GetChannelEpisode?collectionId={Data.CurrentTrack.CollectionId}&link={HttpUtility.UrlEncode(Data.CurrentTrack.Path)}&id={Data.CurrentTrack.Id}";
-                    AudioService.Play(path);
-                }
-                else
-                {
-                    AudioService.Play($"/{Data.CurrentTrack.Path}");
-                }
+                Play();
             }
         }
 
@@ -113,14 +105,7 @@ namespace Blazor.Song.Net.Client.Components
         {
             if (isPlaying)
             {
-                if (Data.CurrentTrack.Path.StartsWith("http"))
-                {
-                    AudioService.Play(Data.CurrentTrack.Path);
-                }
-                else
-                {
-                    AudioService.Play($"/{Data.CurrentTrack.Path}");
-                }
+                Play();
             }
             else
             {
@@ -133,6 +118,20 @@ namespace Blazor.Song.Net.Client.Components
             if (PlaylistTracks.Count <= 1)
                 return;
             Data.CurrentTrack = PlaylistTracks[(PlaylistTracks.IndexOf(Data.CurrentTrack) + 1) % PlaylistTracks.Count];
+        }
+
+        private void Play()
+        {
+            string endpoint;
+            if (Data.CurrentTrack.CollectionId != null)
+            {
+                endpoint = $"/api/Podcast/GetChannelEpisode?collectionId={Data.CurrentTrack.CollectionId}&id={Data.CurrentTrack.Id}";
+            }
+            else
+            {
+                endpoint = $"/api/Library/Download?path={HttpUtility.UrlEncode(("/" + Data.CurrentTrack.Path).Replace("//", "/"))}";
+            }
+            AudioService.Play(endpoint);
         }
 
         private void RefreshTimeStatus()

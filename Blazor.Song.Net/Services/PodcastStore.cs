@@ -67,11 +67,11 @@ namespace Blazor.Song.Net.Services
             episodeInfo.CollectionId = collectionId;
             episodeInfo.Path = item.Uri;
             episodeInfo.DownloadPath = path;
-            SaveEpisodeInfo();
 
             if (episodeInfo.Id != 0)
             {
                 _episodesInfo.Add(episodeInfo);
+                SaveEpisodeInfo();
             }
 
             return await _trackParserService.Download(episodeInfo.DownloadPath);

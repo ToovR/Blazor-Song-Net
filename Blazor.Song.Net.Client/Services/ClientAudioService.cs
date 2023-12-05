@@ -1,6 +1,5 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
 using Microsoft.JSInterop;
-using System.Web;
 
 namespace Blazor.Song.Net.Client.Services
 {
@@ -57,7 +56,7 @@ namespace Blazor.Song.Net.Client.Services
 
         public void Play(string path)
         {
-            _jsRuntime.InvokeVoidAsync("audio.play", $"/api/Library/Download?path={HttpUtility.UrlEncode(path.Replace("//", "/"))}");
+            _jsRuntime.InvokeVoidAsync("audio.play", path);
         }
 
         public async Task SetBalance(double value)
