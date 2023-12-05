@@ -38,7 +38,7 @@
                         }
                         else
                         {
-                            <QuickGrid Items="@ChannelsFiltered" class="table is-hoverable is-fullwidth is-narrow" OnRowClick="@((PodcastChannel item) => ClickChannelRow(item))">
+                            <QuickGrid Items="@ChannelsFiltered" class="table is-hoverable is-fullwidth is-narrow myChannels" OnRowClick="@((PodcastChannel item) => ClickChannelRow(item))">
                                 <TemplateColumn Title="Podcast" Sortable="true" SortBy="sortByCollectionName">
                                     <div @onclick=" e => ClickChannelRow(context)">@context.CollectionName</div>   
                                 </TemplateColumn>
@@ -48,44 +48,6 @@
                             </QuickGrid>
                         }
                     }
-                    @*                     <table class="table is-hoverable is-fullwidth is-narrow">
-                    <thead>
-                    <tr>
-                    <th><span class="text">Titre</span></th>
-                    <th><span class="text">Artiste</span></th>
-                    <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @if (ChannelsFiltered != null)
-                    {
-                    foreach (PodcastChannel channel in ChannelsFiltered)
-                    {
-                    @if (IsNewChannels)
-                    {
-                    <tr class="libraryRow @((channel.ClickMarker.HasValue ?( channel.ClickMarker.Value ? "library-item-clicked": "library-item-clicked2"):""))">
-                    <td>@channel.ArtistName</td>
-                    <td style="width:30px">
-                    @if (channel.IsLoading)
-                    {
-                    <div class="spinner" style="width:20px;height:20px;"></div>
-                    }
-                    </td>
-                    </tr>
-                    }
-                    else
-                    {
-                    <tr @onclick="( e => ClickChannelRow(channel))" class="libraryRow">
-                    <td>@channel.CollectionName</td>
-                    <td>@channel.ArtistName</td>
-                    <td></td>
-                    </tr>
-                    }
-                    }
-                    }
-                    </tbody>
-                    </table>
-                    *@
                 </div>
             </div>
         </div>

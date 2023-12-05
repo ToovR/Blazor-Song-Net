@@ -77,6 +77,10 @@
     height: 250px;
 }
 
+.myChannels tr {
+    cursor: pointer;
+}
+
 #podcastchannel .table-scroll {
     height: 450px;
 }
