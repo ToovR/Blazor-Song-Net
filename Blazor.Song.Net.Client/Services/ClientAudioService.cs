@@ -1,5 +1,6 @@
 ﻿using Blazor.Song.Net.Client.Interfaces;
 using Microsoft.JSInterop;
+using System.Web;
 
 namespace Blazor.Song.Net.Client.Services
 {
@@ -28,6 +29,11 @@ namespace Blazor.Song.Net.Client.Services
             OnEnded?.Invoke();
         }
 
+        public async Task<double> GetBalance()
+        {
+            return await _jsRuntime.InvokeAsync<double>("audio.get_balance");
+        }
+
         public async Task<int> GetBass()
         {
             return await _jsRuntime.InvokeAsync<int>("audio.get_bass");
@@ -51,7 +57,12 @@ namespace Blazor.Song.Net.Client.Services
 
         public void Play(string path)
         {
-            _jsRuntime.InvokeVoidAsync("audio.play", path);
+            _jsRuntime.InvokeVoidAsync("audio.play", $"/api/Library/Download?path={HttpUtility.UrlEncode(path.Replace("//", "/"))}");
+        }
+
+        public async Task SetBalance(double value)
+        {
+            await _jsRuntime.InvokeVoidAsync("audio.set_balance", value);
         }
 
         public async Task SetBass(int value)
@@ -79,16 +90,6 @@ namespace Blazor.Song.Net.Client.Services
         {
             _timeoutAction = refreshTimeStatus;
             _jsRuntime.InvokeVoidAsync("audio.setProgressTimeout", timeout);
-        }
-
-        public async Task SetBalance(double value)
-        {
-            await _jsRuntime.InvokeVoidAsync("audio.set_balance", value);
-        }
-
-        public async Task<double> GetBalance()
-        {
-            return await _jsRuntime.InvokeAsync<double>("audio.get_balance");
         }
 
         public async Task SetTreble(int value)

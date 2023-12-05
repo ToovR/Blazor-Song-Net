@@ -69,27 +69,34 @@ namespace Blazor.Song.Indexer
             return File.ReadAllText(_libraryFile);
         }
 
-        public TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
+        public TrackInfo? GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
         {
-            if (folderRoot == null)
+            try
             {
-                folderRoot = new Uri(Directory.GetCurrentDirectory());
-            }
-            FileInfo musicFileInfo = new(musicFilePath);
-            TagLib.File tagMusicFile = TagLib.File.Create(new TagMusicFile(musicFileInfo.FullName));
+                if (folderRoot == null)
+                {
+                    folderRoot = new Uri(Directory.GetCurrentDirectory());
+                }
+                FileInfo musicFileInfo = new(musicFilePath);
+                TagLib.File tagMusicFile = TagLib.File.Create(new TagMusicFile(musicFileInfo.FullName));
 
-            string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
-            string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFileInfo.FullName);
-            return new TrackInfo
+                string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
+                string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFileInfo.FullName);
+                return new TrackInfo
+                {
+                    Album = tagMusicFile.Tag.Album,
+                    Artist = artist,
+                    Duration = tagMusicFile.Properties.Duration,
+                    Id = index,
+                    Name = musicFileInfo.Name,
+                    Path = Uri.UnescapeDataString(folderRoot.MakeRelativeUri(new Uri(musicFileInfo.FullName)).ToString().Replace("Music/", "")),
+                    Title = title,
+                };
+            }
+            catch
             {
-                Album = tagMusicFile.Tag.Album,
-                Artist = artist,
-                Duration = tagMusicFile.Properties.Duration,
-                Id = index,
-                Name = musicFileInfo.Name,
-                Path = Uri.UnescapeDataString(folderRoot.MakeRelativeUri(new Uri(musicFileInfo.FullName)).ToString().Replace("Music/", "")),
-                Title = title,
-            };
+                return null;
+            }
         }
 
         public bool IsLibraryFileExists()
@@ -161,7 +168,7 @@ namespace Blazor.Song.Indexer
                         counter++;
                         Console.WriteLine($"progess - {counter * 100 / numberOfTracks}%");
                         return GetTrackInfo(musicFilePath, index, folderRoot);
-                    }).ToArray();
+                    }).Where(t => t != null).ToArray();
             return JsonSerializer.Serialize(allTracks);
         }
 

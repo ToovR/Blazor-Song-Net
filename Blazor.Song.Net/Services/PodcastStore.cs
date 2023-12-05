@@ -52,12 +52,16 @@ namespace Blazor.Song.Net.Services
             }
         }
 
-        public async Task<byte[]> GetChannelEpisodeFile(int collectionId, long id)
+        public async Task<byte[]?> GetChannelEpisodeFile(int collectionId, long id)
         {
             Feed feed = await GetFeed(collectionId);
             FeedItem item = feed.Items.Single(item => item.Id == id);
             string path = await _trackParserService.GetChannelEpisode(collectionId, item.Uri, id);
             TrackInfo episodeInfo = _trackParserService.GetTrackInfo(path, path.GetHashCode());
+            if (episodeInfo == null)
+            {
+                return null;
+            }
             episodeInfo.Id = id;
             episodeInfo.Title = item.Title;
             episodeInfo.CollectionId = collectionId;

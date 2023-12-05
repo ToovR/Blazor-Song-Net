@@ -60,14 +60,11 @@ namespace Blazor.Song.Indexer
 
             try
             {
-
-
                 ShareFileClient file = feedDirectory.GetFileClient($"{id}_{urlFileName}");
                 if (!file.Exists())
                 {
                     using (Stream stream = await DownloadFromUrlToStream(link))
                     {
-
                         UploadStreamToFile(stream, file);
                     }
                 }
@@ -131,11 +128,11 @@ namespace Blazor.Song.Indexer
                     {
                         counter++;
                         return GetTrackInfo(musicFilePath, index);
-                    }).ToArray();
+                    }).Where(t => t != null).ToArray();
             return JsonSerializer.Serialize(allTracks);
         }
 
-        public TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
+        public TrackInfo? GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
         {
             (string sharename, string directoryname, string filename) = GetPathParts(musicFilePath);
             ShareFileClient musicFile = GetShare(sharename).GetDirectoryClient(directoryname).GetFileClient(filename);
@@ -152,7 +149,14 @@ namespace Blazor.Song.Indexer
 
         public async Task<string> LoadPlaylist()
         {
-            return await GetFileContentAsync(_musicsharename, _directoryRoot, _playlistFile);
+            try
+            {
+                return await GetFileContentAsync(_musicsharename, _directoryRoot, _playlistFile);
+            }
+            catch
+            {
+                return "";
+            }
         }
 
         public async Task SavePlaylist(string idList)
@@ -330,22 +334,29 @@ namespace Blazor.Song.Indexer
             return foundFiles;
         }
 
-        private TrackInfo GetTrackInfo(ShareFileClient musicFile, int index)
+        private TrackInfo? GetTrackInfo(ShareFileClient musicFile, int index)
         {
-            TagLib.File tagMusicFile = TagLib.File.Create(new FileAzureBlobAbstraction(musicFile));
-
-            string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
-            string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFile.Name);
-            return new TrackInfo
+            try
             {
-                Album = tagMusicFile.Tag.Album,
-                Artist = artist,
-                Duration = tagMusicFile.Properties.Duration,
-                Id = index,
-                Name = musicFile.Name,
-                Path = musicFile.Uri.AbsolutePath,
-                Title = title,
-            };
+                TagLib.File tagMusicFile = TagLib.File.Create(new FileAzureBlobAbstraction(musicFile));
+
+                string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
+                string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFile.Name);
+                return new TrackInfo
+                {
+                    Album = tagMusicFile.Tag.Album,
+                    Artist = artist,
+                    Duration = tagMusicFile.Properties.Duration,
+                    Id = index,
+                    Name = musicFile.Name,
+                    Path = musicFile.Uri.AbsolutePath,
+                    Title = title,
+                };
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private void UploadFile(string sharename, string directoryName, string fileName, string content)

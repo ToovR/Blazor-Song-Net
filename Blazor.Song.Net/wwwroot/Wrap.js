@@ -13,6 +13,7 @@ window.audio = {
         var self = this;
         var newSound = new Howl({
             src: [trackPath],
+            format: ["mp3"],
             onend: function () {
                 self._serviceRef.invokeMethodAsync('AudioEnded');
             }

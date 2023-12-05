@@ -15,6 +15,7 @@ namespace Blazor.Song.Net.Controllers
         }
 
         [HttpGet("[action]")]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 3600)]
         public async Task<ActionResult> Download(string path)
         {
             byte[] file = await _libraryStore.Download(path);

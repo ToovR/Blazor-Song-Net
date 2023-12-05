@@ -55,7 +55,7 @@ namespace Blazor.Song.Net.Services
             Console.WriteLine($" t : {trackInfo.Title}, c : {trackInfo.CollectionId}");
             if (trackInfo.CollectionId != null)
             {
-                byte[] file =  await _podcastStore.GetChannelEpisodeFile(trackInfo.CollectionId.Value, trackInfo.Id);
+                byte[] file = await _podcastStore.GetChannelEpisodeFile(trackInfo.CollectionId.Value, trackInfo.Id);
             }
             else
             {
@@ -116,13 +116,13 @@ namespace Blazor.Song.Net.Services
 
         public async Task<List<TrackInfo>> GetTracks(string ids)
         {
-            var idList = ids.Split("|", StringSplitOptions.RemoveEmptyEntries).Select(id => long.Parse(id));
+            IEnumerable<long> idList = ids.Split("|", StringSplitOptions.RemoveEmptyEntries).Select(id => long.Parse(id));
             try
             {
-                var songs = _libraryStore.GetTracks(idList);
-                var podcastEpisodes = _podcastStore.GetTracks(idList.Except(songs.Select(song => song.Id)));
-                var presentIds = idList.Where(id => songs.Any(song => song.Id == id) || podcastEpisodes.Any(episode => episode.Id == id));
-                var tracks = presentIds.Select(id => songs.FirstOrDefault(song => song.Id == id) ?? podcastEpisodes.First(episode => episode.Id == id));
+                IEnumerable<TrackInfo> songs = _libraryStore.GetTracks(idList);
+                IEnumerable<TrackInfo> podcastEpisodes = _podcastStore.GetTracks(idList.Except(songs.Select(song => song.Id)));
+                IEnumerable<long> presentIds = idList.Where(id => songs.Any(song => song.Id == id) || podcastEpisodes.Any(episode => episode.Id == id));
+                IEnumerable<TrackInfo> tracks = presentIds.Select(id => songs.FirstOrDefault(song => song.Id == id) ?? podcastEpisodes.First(episode => episode.Id == id));
                 return tracks.ToList();
             }
             catch (Exception)

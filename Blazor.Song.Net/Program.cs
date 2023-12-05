@@ -16,14 +16,6 @@ builder.Services.AddServerServices(isAzure);
 
 var app = builder.Build();
 
-app.MapWhen(context => context.Request.Path.Value.EndsWith(".mp3") ||
-         context.Request.Path.Value.EndsWith(".ogg") ||
-         context.Request.Path.Value.EndsWith(".flac"), config =>
-                 config.Run(async context =>
-                 {
-                     context.Response.Redirect($"/api/Library/Download?path={context.Request.Path.Value}");
-                 }));
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

@@ -2,6 +2,7 @@
 using Blazor.Song.Net.Shared;
 using Blazored.LocalStorage;
 using System.Net.Http.Json;
+using System.Web;
 
 namespace Blazor.Song.Net.Client.Services
 {
@@ -60,7 +61,8 @@ namespace Blazor.Song.Net.Client.Services
             }
             else
             {
-                await _client.GetByteArrayAsync(trackInfo.Path);
+                var trackInfoPath = $"/{trackInfo.Path}".Replace("//", "/");
+                await _client.GetByteArrayAsync($"/api/Library/Download?path={HttpUtility.UrlEncode(trackInfoPath)}");
             }
         }
 
@@ -71,7 +73,10 @@ namespace Blazor.Song.Net.Client.Services
             if (tracks == null)
             {
                 allTracks = await GetSongs(null);
-                await _localStorage.SetItemAsync("ALLTRACKS", allTracks);
+                if (allTracks != null && allTracks.Length > 0)
+                {
+                    await _localStorage.SetItemAsync("ALLTRACKS", allTracks);
+                }
             }
             else
             {

@@ -96,7 +96,7 @@ namespace Blazor.Song.Net.Client.Components
                 }
                 else
                 {
-                    AudioService.Play($"{NavigationManager.BaseUri}/{Data.CurrentTrack.Path}");
+                    AudioService.Play($"/{Data.CurrentTrack.Path}");
                 }
             }
         }
@@ -119,7 +119,7 @@ namespace Blazor.Song.Net.Client.Components
                 }
                 else
                 {
-                    AudioService.Play($"{NavigationManager.BaseUri}/{Data.CurrentTrack.Path}");
+                    AudioService.Play($"/{Data.CurrentTrack.Path}");
                 }
             }
             else
