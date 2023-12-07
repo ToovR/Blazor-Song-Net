@@ -2,7 +2,9 @@
 
 <div class="main hero is-fullheight">
     <div id="equalizerDiv" style="background-color:black">
-            <canvas id="equalizer" style="position:absolute"></canvas>
+        <canvas id="equalizer" style="position:absolute"></canvas>
+        <div id="logoBackground"></div>
+
         <CascadingValue Value="@PlaylistTracks">
             <Player />
             <div class="field has-addons has-addons-fullwidth">
@@ -30,8 +32,8 @@
             </div>
             @Body
         </CascadingValue>
+        <label style="background-color:#00000088;position:absolute;right:0;bottom:0">
+            @CurrentRenderMode
+        </label>
     </div>
-    <label style="background-color:#00000088;position:absolute;right:0;bottom:0">
-        @CurrentRenderMode
-    </label>
 </div>

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Blazor.Song.Indexer
 {
@@ -34,7 +35,7 @@ namespace Blazor.Song.Indexer
 
         public async Task<byte[]> Download(string path)
         {
-            (string sharename, string directoryname, string filename) = GetPathParts(path);
+            (string sharename, string directoryname, string filename) = GetPathParts(HttpUtility.UrlDecode(path));
             return await GetFileByteAsync(sharename, directoryname, filename);
         }
 
