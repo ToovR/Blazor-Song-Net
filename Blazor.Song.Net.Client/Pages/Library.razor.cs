@@ -1,61 +1,64 @@
-using Blazor.Song.Net.Client.Shared;
+using Blazor.Song.Net.Client.Components;
+using Blazor.Song.Net.Client.Helpers;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public partial class Library : ComponentBase
+    public partial class Library : PageBase
     {
+        private TrackInfo[] _allTracks = [];
+        private string _filter = string.Empty;
+        private PersistingComponentStateSubscription _persistingSubscription;
+        private SongList _songList;
         public TrackInfo CurrentTrack { get; set; }
 
-        [Parameter]
         public string Filter
         {
-            get { return Data.Filter; }
+            get { return _filter; }
             set
             {
-                string decodedValue = null;
+                string? decodedValue = null;
                 if (value != null)
+                {
                     decodedValue = Uri.UnescapeDataString(value);
-                if (Data.Filter == decodedValue)
+                }
+                if (_filter == decodedValue)
+                {
                     return;
-                Data.Filter = decodedValue;
+                }
+                _filter = decodedValue ?? "";
+                Data.SetFilter(_filter);
+                UpdateLibrary(Filter);
             }
         }
+
+        [Parameter]
+        public string? FilterParameter
+        { get; set; }
+
+        public bool IsLibraryLoaded { get; private set; }
 
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
-        public List<TrackInfo> TrackListFiltered { get; set; }
-        public bool IsLibraryLoaded { get; private set; }
-        [Inject]
-        private Services.IDataManager Data { get; set; }
+        public TrackInfo[] TrackListFiltered { get; set; }
 
-        public void DoubleclickPlaylistRow(TrackInfo track)
+        [Inject]
+        private PersistentComponentState ApplicationState { get; set; }
+
+        public void AddPlaylistClick(TrackInfo track)
         {
             if (PlaylistTracks.Any(t => t.Id == track.Id))
-                return;
-            PlaylistTracks.Add(track);
-        }
-
-        public async Task SearchKeyUp(KeyboardEventArgs e)
-        {
-            if (e.Key == "Enter")
             {
-                Console.WriteLine($"current filter : {Filter}");
-                await UpdateLibrary(Data.Filter);
+                return;
             }
-        }
-
-        protected async Task FilterClick()
-        {
-            string filter = Data.Filter;
-            await UpdateLibrary(filter);
+            PlaylistTracks.Add(track);
+            if (track.ClickMarker == null)
+            {
+                track.ClickMarker = true;
+            }
+            track.ClickMarker = !track.ClickMarker;
         }
 
         protected async Task LoadLibraryClick()
@@ -64,34 +67,51 @@ namespace Blazor.Song.Net.Client.Pages
             if (loaded)
             {
                 IsLibraryLoaded = true;
-                await UpdateLibrary(Data.Filter);
+                await UpdateLibrary(_filter);
             }
         }
 
         protected override async Task OnInitializedAsync()
         {
-            if ((await Data.GetSongs(null)).Count == 0)
+            _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
+
+            _allTracks = await Data.GetAllSongs();
+
+            if (!string.IsNullOrEmpty(FilterParameter))
+            {
+                _filter = FilterParameter;
+            }
+            else
+            {
+                string? filter = await Data.GetFilter();
+                if (filter != null)
+                {
+                    _filter = filter;
+                }
+            }
+
+            if (_allTracks.Length == 0)
             {
                 IsLibraryLoaded = false;
                 return;
             }
+
             IsLibraryLoaded = true;
-            await UpdateLibrary(Data.Filter);
+            await UpdateLibrary(_filter);
             await base.OnInitializedAsync();
         }
 
-        protected async Task SearchInputKeyPressed(KeyboardEventArgs keybordEvent)
+        private Task PersistData()
         {
-            if (keybordEvent.Key == "Enter")
-            {
-                await FilterClick();
-            }
+            ApplicationState.PersistAsJson("ALLTRACKS", _allTracks);
+            ApplicationState.PersistAsJson("FILTER", _filter);
+            return Task.CompletedTask;
         }
 
-        private async Task UpdateLibrary(string filter)
+        private Task UpdateLibrary(string filter)
         {
-
-            TrackListFiltered = await Data.GetSongs(filter);
+            TrackListFiltered = _allTracks.GetTracks(filter);
+            return Task.CompletedTask;
         }
     }
 }

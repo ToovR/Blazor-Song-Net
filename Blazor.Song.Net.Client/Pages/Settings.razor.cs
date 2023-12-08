@@ -1,15 +1,28 @@
-using Blazor.Song.Net.Client.Services;
+using Blazor.Song.Net.Client.Interfaces;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public partial class Settings : ComponentBase
+    public partial class Settings : PageBase
     {
+        private int _currentBalance;
         private int _currentBass;
         private int _currentTreble;
         private string _imageUrl = string.Empty;
+
+        public int CurrentBalance
+        {
+            get { return _currentBalance; }
+            set
+            {
+                if (_currentBalance == value)
+                {
+                    return;
+                }
+                _currentBalance = value;
+                AudioService.SetBalance((double)value / 50);
+            }
+        }
 
         public int CurrentBass
         {
@@ -40,33 +53,13 @@ namespace Blazor.Song.Net.Client.Pages
         }
 
         [Inject]
-        protected AudioService AudioService { get; set; }
-
-        [Inject]
-        protected Services.IDataManager Data { get; set; }
-
-        protected string ImageUrl
-        {
-            get { return _imageUrl; }
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                    return;
-                if (_imageUrl == value)
-                    return;
-                _imageUrl = value;
-                Wrap.ClassElement mainClassElement = new Wrap.ClassElement("main", JSRuntime);
-                mainClassElement.UpdateBackgroundImage(_imageUrl);
-            }
-        }
-
-        [Inject]
-        private IJSRuntime JSRuntime { get; set; }
+        protected IAudioService AudioService { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             _currentBass = await AudioService.GetBass();
             _currentTreble = await AudioService.GetTreble();
+            _currentBalance = (int)(await AudioService.GetBalance() * 50);
             await base.OnInitializedAsync();
         }
     }

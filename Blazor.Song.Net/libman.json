@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "font-awesome@5.13.0",
+      "destination": "wwwroot/lib/font-awesome/"
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "bulma@0.8.1",
+      "destination": "wwwroot/lib/bulma/"
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "bulma-slider@2.0.5",
+      "destination": "wwwroot/lib/bulma-slider/"
+    },
+    {
+      "library": "howler@2.2.4",
+      "destination": "wwwroot/lib/howler/"
+    }
+  ]
+}

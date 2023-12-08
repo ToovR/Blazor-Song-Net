@@ -5,14 +5,14 @@ using Azure.Storage.Files.Shares;
 using Azure.Storage.Files.Shares.Models;
 using Blazor.Song.Net.Shared;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Blazor.Song.Indexer
 {
@@ -23,6 +23,7 @@ namespace Blazor.Song.Indexer
         private const string _episodeListFile = "downloadedEpisodes.json";
         private const string _libraryFile = "tracks.json";
         private const string _musicsharename = "music";
+        private const string _playlistFile = "playlist.txt";
         private const string _podcastsharename = "podcast";
         private const int BLOCK_SIZE = 16 * 1024;
         private readonly string _blobConnectionstring;
@@ -34,7 +35,7 @@ namespace Blazor.Song.Indexer
 
         public async Task<byte[]> Download(string path)
         {
-            (string sharename, string directoryname, string filename) = GetPathParts(path);
+            (string sharename, string directoryname, string filename) = GetPathParts(HttpUtility.UrlDecode(path));
             return await GetFileByteAsync(sharename, directoryname, filename);
         }
 
@@ -60,10 +61,13 @@ namespace Blazor.Song.Indexer
 
             try
             {
-                using (Stream stream = await DownloadFromUrlToStream(link))
+                ShareFileClient file = feedDirectory.GetFileClient($"{id}_{urlFileName}");
+                if (!file.Exists())
                 {
-                    ShareFileClient file = feedDirectory.GetFileClient($"{id}_{urlFileName}");
-                    UploadStreamToFile(stream, file);
+                    using (Stream stream = await DownloadFromUrlToStream(link))
+                    {
+                        UploadStreamToFile(stream, file);
+                    }
                 }
             }
             catch (Exception ex)
@@ -78,12 +82,12 @@ namespace Blazor.Song.Indexer
             string sharename;
             if (path.StartsWith("/music"))
             {
-                path = path.Substring("/music".Length);
+                path = path["/music".Length..];
                 sharename = _musicsharename;
             }
             else if (path.StartsWith("/podcast"))
             {
-                path = path.Substring("/podcast".Length);
+                path = path["/podcast".Length..];
                 sharename = _podcastsharename;
             }
             else
@@ -118,18 +122,18 @@ namespace Blazor.Song.Indexer
             ShareClient share = GetShare(_musicsharename);
             ShareDirectoryClient directory = share.GetDirectoryClient(_directoryRoot);
             Azure.Pageable<Azure.Storage.Files.Shares.Models.ShareFileItem> files = directory.GetFilesAndDirectories();
-            IEnumerable<ShareFileClient> trackEnum = GetShareFiles(_directoryRoot, new string[] { ".mp3", ".ogg", ".flac" });
+            IEnumerable<ShareFileClient> trackEnum = GetShareFiles(_directoryRoot, [".mp3", ".ogg", ".flac"]);
             int numberOfTracks = trackEnum.Count();
             var allTracks = trackEnum.AsParallel()
                     .Select((musicFilePath, index) =>
                     {
                         counter++;
                         return GetTrackInfo(musicFilePath, index);
-                    }).ToArray();
-            return JsonConvert.SerializeObject(allTracks);
+                    }).Where(t => t != null).ToArray();
+            return JsonSerializer.Serialize(allTracks);
         }
 
-        public TrackInfo GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
+        public TrackInfo? GetTrackInfo(string musicFilePath, int index, Uri folderRoot = null)
         {
             (string sharename, string directoryname, string filename) = GetPathParts(musicFilePath);
             ShareFileClient musicFile = GetShare(sharename).GetDirectoryClient(directoryname).GetFileClient(filename);
@@ -142,6 +146,23 @@ namespace Blazor.Song.Indexer
             ShareDirectoryClient directory = share.GetDirectoryClient("/");
             ShareFileClient file = directory.GetFileClient(_libraryFile);
             return file.Exists();
+        }
+
+        public async Task<string> LoadPlaylist()
+        {
+            try
+            {
+                return await GetFileContentAsync(_musicsharename, _directoryRoot, _playlistFile);
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        public async Task SavePlaylist(string idList)
+        {
+            await UploadFileAsync(_podcastsharename, _directoryRoot, _playlistFile, idList);
         }
 
         public void UpdateChannelFile(string fileContent)
@@ -184,7 +205,37 @@ namespace Blazor.Song.Indexer
                     uploadChunk.Position = 0;
 
                     HttpRange httpRange = new(offset, buffer.Length);
-                    Response<ShareFileUploadInfo> resp = file.UploadRange(httpRange, uploadChunk);
+                    file.UploadRange(httpRange, uploadChunk);
+                    offset += buffer.Length;
+                }
+            }
+        }
+
+        private static async Task UploadStreamToFileAsync(Stream stream, ShareFileClient file)
+        {
+            stream.Position = 0;
+
+            if (await file.ExistsAsync())
+            {
+                await file.DeleteAsync();
+            }
+            await file.CreateAsync(stream.Length);
+
+            using (BinaryReader reader = new(stream))
+            {
+                int offset = 0;
+                while (true)
+                {
+                    byte[] buffer = reader.ReadBytes(16 * 1024);
+                    if (buffer.Length == 0)
+                        break;
+
+                    MemoryStream uploadChunk = new();
+                    await uploadChunk.WriteAsync(buffer);
+                    uploadChunk.Position = 0;
+
+                    HttpRange httpRange = new(offset, buffer.Length);
+                    await file.UploadRangeAsync(httpRange, uploadChunk);
                     offset += buffer.Length;
                 }
             }
@@ -194,7 +245,7 @@ namespace Blazor.Song.Indexer
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                Uri uri = new Uri(url);
+                Uri uri = new(url);
                 var response = await httpClient.GetAsync(uri);
                 MemoryStream ms = new();
                 await response.Content.CopyToAsync(ms);
@@ -209,14 +260,14 @@ namespace Blazor.Song.Indexer
             ShareFileClient file = directory.GetFileClient(filename);
             byte[] buffer = new byte[BLOCK_SIZE];
             using (Stream stream = await file.OpenReadAsync())
-            using (MemoryStream ms = new())
+            using (MemoryStream memoryStream = new())
             {
                 int read;
-                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                while ((read = await stream.ReadAsync(buffer)) > 0)
                 {
-                    await ms.WriteAsync(buffer, 0, read);
+                    await memoryStream.WriteAsync(buffer.AsMemory(0, read));
                 }
-                return ms.ToArray();
+                return memoryStream.ToArray();
             }
         }
 
@@ -257,13 +308,13 @@ namespace Blazor.Song.Indexer
 
         private ShareClient GetShare(string name)
         {
-            ShareClient share = new ShareClient(_blobConnectionstring, name);
+            ShareClient share = new(_blobConnectionstring, name);
             return share;
         }
 
         private IEnumerable<ShareFileClient> GetShareFiles(string directoryName, string[] extensions)
         {
-            List<ShareFileClient> foundFiles = new();
+            List<ShareFileClient> foundFiles = [];
             ShareClient share = GetShare(_musicsharename);
 
             ShareDirectoryClient directory = share.GetDirectoryClient(directoryName);
@@ -284,22 +335,29 @@ namespace Blazor.Song.Indexer
             return foundFiles;
         }
 
-        private TrackInfo GetTrackInfo(ShareFileClient musicFile, int index)
+        private TrackInfo? GetTrackInfo(ShareFileClient musicFile, int index)
         {
-            TagLib.File tagMusicFile = TagLib.File.Create(new FileAzureBlobAbstraction(musicFile));
-
-            string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
-            string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFile.Name);
-            return new TrackInfo
+            try
             {
-                Album = tagMusicFile.Tag.Album,
-                Artist = artist,
-                Duration = tagMusicFile.Properties.Duration,
-                Id = index,
-                Name = musicFile.Name,
-                Path = musicFile.Uri.AbsolutePath,
-                Title = title,
-            };
+                TagLib.File tagMusicFile = TagLib.File.Create(new FileAzureBlobAbstraction(musicFile));
+
+                string artist = tagMusicFile.Tag.FirstAlbumArtist ?? tagMusicFile.Tag.AlbumArtistsSort.FirstOrDefault() ?? ((TagLib.NonContainer.File)tagMusicFile).Tag.Performers.FirstOrDefault();
+                string title = !string.IsNullOrEmpty(tagMusicFile.Tag.Title) ? tagMusicFile.Tag.Title : Path.GetFileNameWithoutExtension(musicFile.Name);
+                return new TrackInfo
+                {
+                    Album = tagMusicFile.Tag.Album,
+                    Artist = artist,
+                    Duration = tagMusicFile.Properties.Duration,
+                    Id = index,
+                    Name = musicFile.Name,
+                    Path = musicFile.Uri.AbsolutePath,
+                    Title = title,
+                };
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private void UploadFile(string sharename, string directoryName, string fileName, string content)
@@ -307,13 +365,28 @@ namespace Blazor.Song.Indexer
             ShareClient share = GetShare(sharename);
             ShareDirectoryClient directory = share.GetDirectoryClient(directoryName);
             ShareFileClient file = directory.GetFileClient(fileName);
-            using (MemoryStream stream = new MemoryStream())
+            using (MemoryStream stream = new())
             {
-                StreamWriter writer = new StreamWriter(stream);
+                StreamWriter writer = new(stream);
                 writer.Write(content);
                 writer.Flush();
 
                 UploadStreamToFile(stream, file);
+            }
+        }
+
+        private async Task UploadFileAsync(string sharename, string directoryName, string fileName, string content)
+        {
+            ShareClient share = GetShare(sharename);
+            ShareDirectoryClient directory = share.GetDirectoryClient(directoryName);
+            ShareFileClient file = directory.GetFileClient(fileName);
+            using (MemoryStream stream = new())
+            {
+                StreamWriter writer = new(stream);
+                await writer.WriteAsync(content);
+                await writer.FlushAsync();
+
+                await UploadStreamToFileAsync(stream, file);
             }
         }
     }

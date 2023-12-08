@@ -1,0 +1,14 @@
+﻿@charset "utf-8";
+
+$grey: #808080;
+$white: #ffffff;
+$limeGreen: #32CD32;
+$lightGreen: #ADFFAD;
+$darkGrey: #404040;
+$turquoise: #00E2C0;
+$text: $turquoise;
+$info: $grey;
+$info-invert: $turquoise;
+$text-strong: $darkGrey;
+
+@import "../lib/bulma/bulma.sass";

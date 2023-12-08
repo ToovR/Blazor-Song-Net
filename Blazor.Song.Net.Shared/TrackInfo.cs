@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace Blazor.Song.Net.Shared
 {
@@ -8,14 +8,17 @@ namespace Blazor.Song.Net.Shared
         public string Album { get; set; }
         public string Artist { get; set; }
 
+        [JsonIgnore]
+        public bool? ClickMarker { get; set; }
+
         public int? CollectionId { get; set; }
+        public string DownloadPath { get; set; }
 
         [JsonIgnore]
         public TimeSpan Duration { get; set; }
 
         public Int64 Id { get; set; }
         public string Name { get; set; }
-
         public string Path { get; set; }
 
         public string SDuration
@@ -26,6 +29,5 @@ namespace Blazor.Song.Net.Shared
 
         public object SourceObject { get; set; }
         public string Title { get; set; }
-        public string DownloadPath { get; set; }
     }
 }

@@ -1,64 +1,60 @@
 ﻿@page "/PodcastLibrary"
 @page "/PodcastLibrary/{Filter}"
-@using Blazor.Song.Net.Client;
-@using Blazor.Song.Net.Shared;
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inherits PageBase
 
-<div id="library" name="library" class="content section">
-    <!-- Podcasts subscribed/Podcast search-->
-    <div name="searchPanel" class="field has-addons is-fullwidth">
-        <div id="librarySearchDiv" class="control is-fullwidth">
-            <input class="input is-fullwidth" type="text" placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @onkeypress="SearchInputKeyPressed" />
+<PageTitle>@Title</PageTitle>
+
+    <div name="library" class="content section">
+        <!-- Podcasts subscribed/Podcast search-->
+        <div name="searchPanel" class="field is-fullwidth">
+            <div id="librarySearchDiv" class="control is-fullwidth" style="display:contents">
+                <input class="input is-fullwidth" type="text" placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @onkeypress="SearchInputKeyPressed" />
+            </div>
+            <div class="control">
+                <a class="button is-info" @onclick=FilterClick>
+                    Filtrer
+                </a>
+                <a class="button is-info" @onclick=SearchClick>
+                    Rechercher
+                </a>
+            </div>
         </div>
-        <div class="control">
-            <a class="button is-info" @onclick=FilterClick>
-                Filtrer
-            </a>
-            <a class="button is-info" @onclick=SearchClick>
-                Rechercher
-            </a>
-        </div>
-    </div>
-    <div class="columns">
-        <div class="column">
-            <div name="songList" class="table-container frame">
-                <div class="table-scroll">
-                    <table class="table is-hoverable is-fullwidth is-narrow">
-                        <thead>
-                            <tr>
-                                <th><span class="text">Titre</span></th>
-                                <th><span class="text">Artiste</span></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (ChannelsFiltered != null)
-                            {
-                                foreach (PodcastChannel channel in ChannelsFiltered)
-                                {
-                                    <tr @onclick="( e => ClickChannelRow(channel))" class="libraryRow">
-                                        <td>@channel.CollectionName</td>
-                                        <td>@channel.ArtistName</td>
-                                        @if (IsNewChannels)
-                                        {
-                                            <td><button class="column button is-info" @onclick="(e => SubscribeToPodcast(channel.CollectionId))"><i class="fa fa-plus"></i></button></td>
-                                        }
-                                        <td style="width:30px">
-                                            @if (channel.IsLoading)
-                                            {
-                                                <div class="spinner" style="width:20px;height:20px;"></div>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
+        <div class="columns">
+            <div id="podcastchannel" class="column">
+                <div name="songList" class="table-container frame light-table">
+                    <div class="table-scroll">
+                        @if (ChannelsFiltered != null)
+                    {
+                        @if (IsNewChannels)
+                        {
+                            <QuickGrid  Items="@ChannelsFiltered" class="table is-hoverable is-fullwidth is-narrow">
+                                <TemplateColumn Title="" Sortable="false">
+                                    <button class="button is-info lib-button" @onclick="(e => SubscribeToPodcast(context))"><i class="fa fa-plus"></i></button>
+                                </TemplateColumn>
+                                <PropertyColumn Title="Podcast" Property="@(p => p.CollectionName)" Sortable="true" />
+                                <PropertyColumn Title="Auteur" Property="@(p => p.ArtistName)" Sortable="true" />
+                            </QuickGrid>
+                        }
+                        else
+                        {
+                            <QuickGrid Items="@ChannelsFiltered" class="table is-hoverable is-fullwidth is-narrow myChannels" OnRowClick="@((PodcastChannel item) => ClickChannelRow(item))">
+                                <TemplateColumn Title="Podcast" Sortable="true" SortBy="sortByCollectionName">
+                                    <div @onclick=" e => ClickChannelRow(context)">@context.CollectionName</div>   
+                                </TemplateColumn>
+                                <TemplateColumn Title="Auteur" Sortable="true" SortBy="sortByArtistName">
+                                    <div @onclick=" e => ClickChannelRow(context)">@context.ArtistName</div>
+                                </TemplateColumn>
+                            </QuickGrid>
+                        }
+                    }
                 </div>
             </div>
         </div>
-        <div class="column">
+        <div id="podcastepisode" class="column @(CurrentChannelSummary != null ? "expand" : "collapse")">
             @if (CurrentChannelSummary != null)
             {
-                <div class="card-content pCard">
+                <div class="card-content pCard table-scroll podcast-card">
                     <div class="media">
                         <div class="media-left">
                             <figure class="image is-48x48">
@@ -78,6 +74,7 @@
                     <tr @ondblclick="( e => DoubleclickPlaylistRow(context))" class="libraryRow">
                         <td>@context.Title</td>
                         <td>@context.Artist</td>
+                        <td>@context.Album</td>
                         <td>
                             @if (context.Duration != TimeSpan.Zero)
                             {

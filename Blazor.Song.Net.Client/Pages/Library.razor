@@ -1,16 +1,13 @@
 ﻿@page "/library"
-@page "/library/{Filter}"
-@using Blazor.Song.Net.Client;
+@page "/library/{FilterParameter}"
+@inherits PageBase
+
+<PageTitle>@Title</PageTitle>
 
 <div id="library" name="library" class="content section">
-    <div name="searchPanel" class="field has-addons is-fullwidth">
+    <div name="searchPanel" class="field is-fullwidth">
         <div id="librarySearchDiv" class="control is-fullwidth">
-            <input class="input is-fullwidth" type="text" @onkeyup=SearchKeyUp placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @onkeypress="SearchInputKeyPressed" />
-        </div>
-        <div class="control">
-            <a class="button is-info" @onclick=FilterClick>
-                Rechercher
-            </a>
+            <input class="input is-fullwidth" type="text" placeholder='Exemple de filtre -> artist:"David Bowie" title:"/H(e|é)roe?s/"' @bind="Filter" @bind:event="oninput" />
         </div>
     </div>
     @if (!IsLibraryLoaded)
@@ -21,11 +18,12 @@
     }
     else
     {
-        <SongList Tracks="@TrackListFiltered" CurrentTrack="@CurrentTrack">
+        <SongList Tracks="@TrackListFiltered" CurrentTrack="@CurrentTrack" @ref="_songList">
             <RowTemplate>
-                <tr @ondblclick="( e => DoubleclickPlaylistRow(context))" class="libraryRow">
-                    <td>@context.Title</td>
+                <tr class="libraryRow @((context.ClickMarker.HasValue ?( context.ClickMarker.Value ? "library-item-clicked": "library-item-clicked2"):""))">
+                    <td><button class="button is-info lib-button" @onclick="( e => AddPlaylistClick(context))"><i class="fa fa-plus"></i></button>@context.Title</td>
                     <td>@context.Artist</td>
+                    <td>@context.Album</td>
                     <td>@context.Duration.ToString("mm\\:ss")</td>
                 </tr>
             </RowTemplate>

@@ -1,0 +1,11 @@
+﻿@using Blazor.Song.Net.Shared
+@using System.Globalization
+
+<div style="min-height:30px"><label class="label">@TrackFullTitle</label></div>
+<progress id="songProgress" 
+          name="songProgress" 
+          class="progress is-primary trackProgress" 
+          value="@(TimeStatus.ToString(new CultureInfo("en")))" 
+          max="100" 
+          @onclick=ProgressClick>
+</progress>

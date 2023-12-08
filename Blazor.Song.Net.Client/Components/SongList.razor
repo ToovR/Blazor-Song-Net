@@ -1,0 +1,25 @@
+﻿@using Blazor.Song.Net.Shared
+
+<div name="songList" class="table-container frame light-table">
+    <div class="table-scroll">
+        <table class="table is-hoverable is-fullwidth is-narrow songlist-table">
+            <thead>
+                <tr>
+                    <th><span class="text">Titre</span></th>
+                    <th><span class="text">Artiste</span></th>
+                    <th><span class="text">Album</span></th>
+                    <th><span class="text">Durée</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Tracks != null)
+                {
+                    foreach (TrackInfo track in Tracks)
+                    {
+                        @RowTemplate(track)
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

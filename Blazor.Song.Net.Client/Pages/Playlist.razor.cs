@@ -1,24 +1,15 @@
-using Blazor.Song.Net.Client.Shared;
+using Blazor.Song.Net.Client.Helpers;
+using Blazor.Song.Net.Client.Interfaces;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using System;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public partial class Playlist : ComponentBase
+    public partial class Playlist : PageBase
     {
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
-
-        [Inject]
-        protected Services.IDataManager Data { get; set; }
-
-        [Inject]
-        private IJSRuntime JsRuntime { get; set; }
 
         public void RemovePlaylistTrack(Int64 trackInfoId)
         {
@@ -36,8 +27,16 @@ namespace Blazor.Song.Net.Client.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            if (PlaylistTracks == null)
+            {
+                PlaylistTracks = new ObservableList<TrackInfo>();
+            }
+            else
+            {
+                PlaylistTracks.CollectionChanged -= PlaylistChanged;
+            }
             await LoadPlaylist();
-            Data.CurrentTrackChanged += CurrentTrackChanged;
+
             PlaylistTracks.CollectionChanged += PlaylistChanged;
 
             await base.OnInitializedAsync();
@@ -76,36 +75,43 @@ namespace Blazor.Song.Net.Client.Pages
             RemovePlaylistTrack(id);
         }
 
-        private async Task CurrentTrackChanged(TrackInfo track)
-        {
-            this.StateHasChanged();
-        }
-
         private async Task LoadPlaylist()
         {
-            Wrap.Cookie playlistCookie = new Wrap.Cookie("playlist", JsRuntime);
-            string sidList = await playlistCookie.Get();
+            string sidList = await Data.LoadPlaylist();
+            if (sidList == null)
+            {
+                return;
+            }
             if (sidList != null)
+            {
+                PlaylistTracks.CollectionChanged -= PlaylistChanged;
                 (await Data.GetTracks(sidList)).ForEach(t =>
                 {
                     if (!PlaylistTracks.Any(p => p.Id == t.Id))
                         PlaylistTracks.Add(t);
                 });
-            if (PlaylistTracks.Count > 0)
-                this.StateHasChanged();
+                PlaylistTracks.CollectionChanged += PlaylistChanged;
+            }
+            if (PlaylistTracks.Count > 0 && Data.CurrentTrack == null)
+            {
+                Data.CurrentTrack = PlaylistTracks.First();
+            }
+            this.StateHasChanged();
         }
 
-        private async void PlaylistChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void PlaylistChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            await SavePlaylist();
-            this.StateHasChanged();
+            Task.Run(async () =>
+            {
+                await SavePlaylist();
+                this.StateHasChanged();
+            });
         }
 
         private async Task SavePlaylist()
         {
             string idList = string.Join("|", PlaylistTracks.Select(p => p.Id));
-            Wrap.Cookie playlistCookie = new Wrap.Cookie("playlist", JsRuntime);
-            await playlistCookie.Set(idList);
+            await Data.SavePlaylist(idList);
         }
     }
 }

@@ -12,11 +12,17 @@ namespace Blazor.Song.Indexer
             ShareFileDownloadInfo download = file.Download();
 
             this.Name = file.Name;
-            MemoryStream stream = new MemoryStream();
+            MemoryStream stream = new();
             download.Content.CopyTo(stream);
             ReadStream = stream;
             WriteStream = stream;
         }
+
+        public string Name { get; private set; }
+
+        public Stream ReadStream { get; private set; }
+
+        public Stream WriteStream { get; private set; }
 
         public void CloseStream(Stream stream)
         {
@@ -27,11 +33,5 @@ namespace Blazor.Song.Indexer
         {
             this.ReadStream.Dispose();
         }
-
-        public string Name { get; private set; }
-
-        public Stream ReadStream { get; private set; }
-
-        public Stream WriteStream { get; private set; }
     }
 }

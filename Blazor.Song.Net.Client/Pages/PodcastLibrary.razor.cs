@@ -1,18 +1,21 @@
-using Blazor.Song.Net.Client.Shared;
+using Blazor.Song.Net.Client.Helpers;
 using Blazor.Song.Net.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.Components.Web;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Blazor.Song.Net.Client.Pages
 {
-    public partial class PodcastLibrary : ComponentBase
+    public partial class PodcastLibrary : PageBase
     {
-        public List<PodcastChannel> ChannelsFiltered { get; private set; }
+        private GridSort<PodcastChannel> sortByArtistName = GridSort<PodcastChannel>
+       .ByAscending(p => p.ArtistName);
+
+        private GridSort<PodcastChannel> sortByCollectionName = GridSort<PodcastChannel>
+        .ByAscending(p => p.CollectionName);
+
+        public IQueryable<PodcastChannel> ChannelsFiltered { get; private set; }
         public TrackInfo CurrentChannel { get; set; }
         public ChannelSummary CurrentChannelSummary { get; set; }
         public TrackInfo CurrentEpisode { get; set; }
@@ -38,10 +41,7 @@ namespace Blazor.Song.Net.Client.Pages
         [CascadingParameter]
         public ObservableList<TrackInfo> PlaylistTracks { get; set; }
 
-        public List<TrackInfo> TrackListFiltered { get; set; }
-
-        [Inject]
-        private Services.IDataManager Data { get; set; }
+        public TrackInfo[] TrackListFiltered { get; set; }
 
         public async Task ClickChannelRow(PodcastChannel channel)
         {
@@ -90,10 +90,11 @@ namespace Blazor.Song.Net.Client.Pages
             }
         }
 
-        protected async Task SubscribeToPodcast(Int64 id)
+        protected async Task SubscribeToPodcast(PodcastChannel newPodcast)
         {
-            var newPodcast = ChannelsFiltered.Single(p => p.CollectionId== id);
             await Data.SubscribeToPodcast(newPodcast);
+            Filter = "";
+            await UpdatePodcastChannel(Filter);
         }
 
         private async Task UpdateLibrary(string filter)
@@ -104,13 +105,15 @@ namespace Blazor.Song.Net.Client.Pages
         private async Task UpdateNewPodcastChannel(string filter)
         {
             IsNewChannels = true;
-            ChannelsFiltered = (await Data.GetNewChannels(filter));
+            ChannelsFiltered = (await Data.GetNewChannels(filter)).AsQueryable();
+            this.StateHasChanged();
         }
 
         private async Task UpdatePodcastChannel(string filter)
         {
             IsNewChannels = false;
-            ChannelsFiltered = (await Data.GetChannels(filter)).ToList();
+            ChannelsFiltered = (await Data.GetChannels(filter)).AsQueryable();
+            this.StateHasChanged();
         }
     }
 }

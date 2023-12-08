@@ -20,6 +20,10 @@ namespace Blazor.Song.Indexer
 
         bool IsLibraryFileExists();
 
+        Task<string> LoadPlaylist();
+
+        Task SavePlaylist(string idList);
+
         void UpdateChannelFile(string content);
 
         void UpdateEpisodeFile(string episodeFileContent);

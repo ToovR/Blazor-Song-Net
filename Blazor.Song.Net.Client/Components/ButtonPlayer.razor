@@ -1,0 +1,12 @@
+﻿@if (IsEnabled)
+{
+    <button class="column button is-info" @onclick="@OnClick">
+        @Template
+    </button>
+}
+else
+{
+    <button class="column button is-info" disabled="true">
+        @Template
+    </button>
+}
