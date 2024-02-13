@@ -28,8 +28,6 @@ namespace Blazor.Song.Indexer
         private const int BLOCK_SIZE = 16 * 1024;
         private readonly string _blobConnectionstring;
 
-
-        // Add a comment to test github dev
         public AzureTrackParserService(IConfiguration configuration)
         {
             _blobConnectionstring = configuration.GetSection("azure.blobconnectionstring").Value;
