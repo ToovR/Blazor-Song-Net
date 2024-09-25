@@ -1,6 +1,6 @@
 # song.net en Blazor .Net 8
 
-## Nouvelles fonctionalités
+## New features
 
 - Tire partie du mode InteractiveAuto
 - Sauvegarde playlists coté serveur
